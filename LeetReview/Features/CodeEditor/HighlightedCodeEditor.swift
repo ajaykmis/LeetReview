@@ -78,6 +78,33 @@ struct HighlightedCodeEditor: UIViewRepresentable {
         let textColor = UIColor(Theme.Colors.text)
         let accentColor = UIColor(Theme.Colors.accent)
 
+        // Cursor arrow buttons (fixed left of row 1)
+        let leftArrow = UIButton(type: .system)
+        leftArrow.setImage(UIImage(systemName: "chevron.left")?.withConfiguration(UIImage.SymbolConfiguration(pointSize: 14, weight: .semibold)), for: .normal)
+        leftArrow.tintColor = accentColor
+        leftArrow.backgroundColor = bgColor
+        leftArrow.layer.cornerRadius = 6
+        leftArrow.translatesAutoresizingMaskIntoConstraints = false
+        leftArrow.addAction(UIAction { [weak textView] _ in
+            guard let textView, let pos = textView.selectedTextRange?.start,
+                  let newPos = textView.position(from: pos, offset: -1) else { return }
+            textView.selectedTextRange = textView.textRange(from: newPos, to: newPos)
+        }, for: .touchUpInside)
+        container.addSubview(leftArrow)
+
+        let rightArrow = UIButton(type: .system)
+        rightArrow.setImage(UIImage(systemName: "chevron.right")?.withConfiguration(UIImage.SymbolConfiguration(pointSize: 14, weight: .semibold)), for: .normal)
+        rightArrow.tintColor = accentColor
+        rightArrow.backgroundColor = bgColor
+        rightArrow.layer.cornerRadius = 6
+        rightArrow.translatesAutoresizingMaskIntoConstraints = false
+        rightArrow.addAction(UIAction { [weak textView] _ in
+            guard let textView, let pos = textView.selectedTextRange?.start,
+                  let newPos = textView.position(from: pos, offset: 1) else { return }
+            textView.selectedTextRange = textView.textRange(from: newPos, to: newPos)
+        }, for: .touchUpInside)
+        container.addSubview(rightArrow)
+
         func makeKeyButton(_ label: String, _ insertText: String) -> UIButton {
             let button = UIButton(type: .system)
             button.setTitle(label, for: .normal)
@@ -157,9 +184,19 @@ struct HighlightedCodeEditor: UIViewRepresentable {
             separator.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             separator.heightAnchor.constraint(equalToConstant: 0.5),
 
-            // Row 1: full width
+            // Row 1: arrows pinned left, then scrollable keys
+            leftArrow.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 6),
+            leftArrow.centerYAnchor.constraint(equalTo: separator.bottomAnchor, constant: 2 + rowHeight / 2),
+            leftArrow.widthAnchor.constraint(equalToConstant: 32),
+            leftArrow.heightAnchor.constraint(equalToConstant: 30),
+
+            rightArrow.leadingAnchor.constraint(equalTo: leftArrow.trailingAnchor, constant: 3),
+            rightArrow.centerYAnchor.constraint(equalTo: leftArrow.centerYAnchor),
+            rightArrow.widthAnchor.constraint(equalToConstant: 32),
+            rightArrow.heightAnchor.constraint(equalToConstant: 30),
+
             row1Scroll.topAnchor.constraint(equalTo: separator.bottomAnchor, constant: 2),
-            row1Scroll.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            row1Scroll.leadingAnchor.constraint(equalTo: rightArrow.trailingAnchor, constant: 3),
             row1Scroll.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             row1Scroll.heightAnchor.constraint(equalToConstant: rowHeight),
 
