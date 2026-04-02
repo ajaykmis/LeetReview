@@ -18,8 +18,10 @@ struct HighlightedCodeEditor: UIViewRepresentable {
         let container = CodeEditorContainerView()
         container.textView.delegate = context.coordinator
         container.textView.text = code
-        container.textView.inputAccessoryView = makeToolbar(for: container.textView, coordinator: context.coordinator)
+        let toolbar = makeToolbar(for: container.textView, coordinator: context.coordinator)
+        container.textView.inputAccessoryView = toolbar
         context.coordinator.containerView = container
+        context.coordinator.setupSuggestionBar(in: toolbar, textView: container.textView)
         context.coordinator.applyHighlighting(to: container.textView, language: languageSlug)
         return container
     }
@@ -195,6 +197,8 @@ struct HighlightedCodeEditor: UIViewRepresentable {
         let onFocusChange: ((Bool) -> Void)?
         weak var containerView: CodeEditorContainerView?
         private var highlightWorkItem: DispatchWorkItem?
+        private var suggestionBar: UIScrollView?
+        private var suggestionContainer: UIView?
 
         init(code: Binding<String>, languageSlug: String, onFocusChange: ((Bool) -> Void)?) {
             _code = code
@@ -216,6 +220,153 @@ struct HighlightedCodeEditor: UIViewRepresentable {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: workItem)
 
             containerView?.updateLineNumbers()
+            updateSuggestions(for: textView)
+        }
+
+        // MARK: - Autocomplete Suggestions
+
+        func setupSuggestionBar(in toolbar: UIView, textView: UITextView) {
+            let bar = UIScrollView()
+            bar.showsHorizontalScrollIndicator = false
+            bar.translatesAutoresizingMaskIntoConstraints = false
+            bar.isHidden = true
+            toolbar.addSubview(bar)
+
+            // Place suggestion bar above the toolbar
+            NSLayoutConstraint.activate([
+                bar.bottomAnchor.constraint(equalTo: toolbar.topAnchor),
+                bar.leadingAnchor.constraint(equalTo: toolbar.leadingAnchor),
+                bar.trailingAnchor.constraint(equalTo: toolbar.trailingAnchor),
+                bar.heightAnchor.constraint(equalToConstant: 34),
+            ])
+            bar.backgroundColor = UIColor(Theme.Colors.background).withAlphaComponent(0.95)
+
+            self.suggestionBar = bar
+            self.suggestionContainer = toolbar
+        }
+
+        private func updateSuggestions(for textView: UITextView) {
+            guard let bar = suggestionBar else { return }
+
+            // Get the word being typed at cursor
+            let text = textView.text ?? ""
+            guard let cursorRange = textView.selectedTextRange,
+                  let wordRange = textView.tokenizer.rangeEnclosingPosition(
+                      cursorRange.start, with: .word, inDirection: .storage(.backward)
+                  ),
+                  let currentWord = textView.text(in: wordRange),
+                  currentWord.count >= 2 else {
+                bar.isHidden = true
+                return
+            }
+
+            // Extract all unique identifiers from the code
+            let identifiers = extractIdentifiers(from: text, language: currentLanguage)
+
+            // Filter matching suggestions (exclude exact match)
+            let prefix = currentWord.lowercased()
+            let matches = identifiers.filter {
+                $0.lowercased().hasPrefix(prefix) && $0.lowercased() != prefix
+            }.sorted().prefix(8)
+
+            guard !matches.isEmpty else {
+                bar.isHidden = true
+                return
+            }
+
+            // Build suggestion buttons
+            bar.subviews.forEach { $0.removeFromSuperview() }
+            let stack = UIStackView()
+            stack.axis = .horizontal
+            stack.spacing = 8
+            stack.alignment = .center
+            stack.translatesAutoresizingMaskIntoConstraints = false
+            bar.addSubview(stack)
+
+            NSLayoutConstraint.activate([
+                stack.leadingAnchor.constraint(equalTo: bar.contentLayoutGuide.leadingAnchor, constant: 8),
+                stack.trailingAnchor.constraint(equalTo: bar.contentLayoutGuide.trailingAnchor, constant: -8),
+                stack.topAnchor.constraint(equalTo: bar.contentLayoutGuide.topAnchor),
+                stack.bottomAnchor.constraint(equalTo: bar.contentLayoutGuide.bottomAnchor),
+                stack.heightAnchor.constraint(equalTo: bar.frameLayoutGuide.heightAnchor),
+            ])
+
+            for suggestion in matches {
+                let btn = UIButton(type: .system)
+                btn.setTitle(suggestion, for: .normal)
+                btn.titleLabel?.font = .monospacedSystemFont(ofSize: 13, weight: .medium)
+                btn.setTitleColor(UIColor(Theme.Colors.accent), for: .normal)
+                btn.backgroundColor = UIColor(Theme.Colors.card)
+                btn.layer.cornerRadius = 6
+                btn.contentEdgeInsets = UIEdgeInsets(top: 4, left: 10, bottom: 4, right: 10)
+                btn.addAction(UIAction { [weak self] _ in
+                    // Replace the current partial word with the suggestion
+                    guard let self, let range = textView.selectedTextRange,
+                          let wordStart = textView.tokenizer.rangeEnclosingPosition(
+                              range.start, with: .word, inDirection: .storage(.backward)
+                          ) else { return }
+                    textView.replace(wordStart, withText: suggestion)
+                }, for: .touchUpInside)
+                stack.addArrangedSubview(btn)
+            }
+
+            bar.isHidden = false
+        }
+
+        private func extractIdentifiers(from code: String, language: String) -> Set<String> {
+            // Match word-like tokens (identifiers, keywords)
+            let pattern = "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"
+            guard let regex = try? NSRegularExpression(pattern: pattern) else { return [] }
+            let nsCode = code as NSString
+            let matches = regex.matches(in: code, range: NSRange(location: 0, length: nsCode.length))
+
+            var identifiers = Set<String>()
+            // Language keywords to include as suggestions
+            let keywords = languageKeywords(for: language)
+
+            for match in matches {
+                let word = nsCode.substring(with: match.range)
+                if word.count >= 2 {
+                    identifiers.insert(word)
+                }
+            }
+            identifiers.formUnion(keywords)
+            return identifiers
+        }
+
+        private func languageKeywords(for language: String) -> Set<String> {
+            switch language.lowercased() {
+            case "python", "python3":
+                return ["def", "class", "return", "if", "elif", "else", "for", "while", "in", "not",
+                        "and", "or", "True", "False", "None", "import", "from", "range", "len",
+                        "enumerate", "sorted", "reversed", "append", "extend", "pop", "items",
+                        "keys", "values", "defaultdict", "Counter", "deque", "heapq", "bisect",
+                        "List", "Dict", "Set", "Tuple", "Optional", "int", "str", "float", "bool",
+                        "self", "super", "lambda", "yield", "pass", "break", "continue", "try",
+                        "except", "finally", "raise", "with", "as", "global", "nonlocal"]
+            case "java":
+                return ["public", "private", "protected", "static", "void", "int", "long", "double",
+                        "float", "boolean", "char", "String", "return", "if", "else", "for", "while",
+                        "class", "new", "this", "null", "true", "false", "import", "extends",
+                        "implements", "interface", "final", "abstract", "try", "catch", "throw",
+                        "throws", "ArrayList", "HashMap", "HashSet", "LinkedList", "Queue", "Stack",
+                        "Arrays", "Collections", "Math", "Integer", "System", "println"]
+            case "cpp", "c":
+                return ["int", "long", "double", "float", "char", "bool", "void", "string",
+                        "return", "if", "else", "for", "while", "class", "struct", "public",
+                        "private", "auto", "const", "static", "virtual", "override", "nullptr",
+                        "true", "false", "new", "delete", "this", "include", "using", "namespace",
+                        "vector", "map", "set", "unordered_map", "unordered_set", "queue", "stack",
+                        "pair", "sort", "begin", "end", "push_back", "size", "empty"]
+            case "javascript", "typescript":
+                return ["function", "const", "let", "var", "return", "if", "else", "for", "while",
+                        "class", "new", "this", "null", "undefined", "true", "false", "import",
+                        "export", "default", "async", "await", "try", "catch", "throw", "typeof",
+                        "Map", "Set", "Array", "Object", "Math", "console", "log", "push", "pop",
+                        "length", "forEach", "filter", "reduce", "includes", "indexOf", "slice"]
+            default:
+                return ["return", "if", "else", "for", "while", "class", "new", "true", "false", "null"]
+            }
         }
 
         func textViewDidBeginEditing(_ textView: UITextView) {
