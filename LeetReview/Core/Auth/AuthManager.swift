@@ -16,7 +16,7 @@ final class AuthManager {
     }
 
     private nonisolated(unsafe) static let keychain = Keychain(service: "com.leetreview.app")
-        .accessibility(.whenPasscodeSetThisDeviceOnly)
+        .accessibility(.whenUnlockedThisDeviceOnly)
     private nonisolated static let sessionKey = "LEETCODE_SESSION"
     private nonisolated static let csrfKey = "csrftoken"
     private nonisolated static let usernameKey = "username"

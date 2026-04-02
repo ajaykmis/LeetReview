@@ -61,9 +61,9 @@ struct HighlightedCodeEditor: UIViewRepresentable {
         separator.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(separator)
 
-        // Row 1: most common coding symbols
+        // Row 1: coding symbols (TAB is a fixed button with arrows)
         let row1Keys: [(String, String)] = [
-            ("TAB", "    "), ("{", "{"), ("}", "}"), ("(", "("), (")", ")"),
+            ("{", "{"), ("}", "}"), ("(", "("), (")", ")"),
             ("[", "["), ("]", "]"), ("=", "="), (";", ";"), (":", ":"), (".", "."),
         ]
 
@@ -104,6 +104,19 @@ struct HighlightedCodeEditor: UIViewRepresentable {
             textView.selectedTextRange = textView.textRange(from: newPos, to: newPos)
         }, for: .touchUpInside)
         container.addSubview(rightArrow)
+
+        // TAB button (fixed, next to arrows)
+        let tabBtn = UIButton(type: .system)
+        tabBtn.setTitle("TAB", for: .normal)
+        tabBtn.titleLabel?.font = .systemFont(ofSize: 11, weight: .semibold)
+        tabBtn.setTitleColor(accentColor, for: .normal)
+        tabBtn.backgroundColor = bgColor
+        tabBtn.layer.cornerRadius = 6
+        tabBtn.translatesAutoresizingMaskIntoConstraints = false
+        tabBtn.addAction(UIAction { [weak coordinator] _ in
+            coordinator?.insertText("    ", into: textView)
+        }, for: .touchUpInside)
+        container.addSubview(tabBtn)
 
         func makeKeyButton(_ label: String, _ insertText: String) -> UIButton {
             let button = UIButton(type: .system)
@@ -195,8 +208,13 @@ struct HighlightedCodeEditor: UIViewRepresentable {
             rightArrow.widthAnchor.constraint(equalToConstant: 32),
             rightArrow.heightAnchor.constraint(equalToConstant: 30),
 
+            tabBtn.leadingAnchor.constraint(equalTo: rightArrow.trailingAnchor, constant: 3),
+            tabBtn.centerYAnchor.constraint(equalTo: leftArrow.centerYAnchor),
+            tabBtn.widthAnchor.constraint(equalToConstant: 38),
+            tabBtn.heightAnchor.constraint(equalToConstant: 30),
+
             row1Scroll.topAnchor.constraint(equalTo: separator.bottomAnchor, constant: 2),
-            row1Scroll.leadingAnchor.constraint(equalTo: rightArrow.trailingAnchor, constant: 3),
+            row1Scroll.leadingAnchor.constraint(equalTo: tabBtn.trailingAnchor, constant: 3),
             row1Scroll.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             row1Scroll.heightAnchor.constraint(equalToConstant: rowHeight),
 
