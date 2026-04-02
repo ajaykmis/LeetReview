@@ -398,7 +398,8 @@ actor LeetCodeAPI {
         guard let httpResponse = response as? HTTPURLResponse,
               (200...299).contains(httpResponse.statusCode) else {
             let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
-            throw APIError.httpError(statusCode: statusCode)
+            let bodyPreview = String(data: data.prefix(200), encoding: .utf8) ?? "no body"
+            throw APIError.httpError(statusCode: statusCode, detail: bodyPreview)
         }
 
         guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
@@ -432,14 +433,18 @@ actor LeetCodeAPI {
 // MARK: - Errors
 
 enum APIError: LocalizedError {
-    case httpError(statusCode: Int)
+    case httpError(statusCode: Int, detail: String? = nil)
     case graphQL([String])
     case noData
 
     var errorDescription: String? {
         switch self {
-        case .httpError(let code):
-            "HTTP error: \(code)"
+        case .httpError(let code, let detail):
+            if let detail, !detail.isEmpty {
+                "HTTP \(code): \(detail)"
+            } else {
+                "HTTP error: \(code)"
+            }
         case .graphQL(let messages):
             "GraphQL errors: \(messages.joined(separator: ", "))"
         case .noData:
@@ -927,14 +932,35 @@ struct SubmissionCheckResult: Decodable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        state = try container.decodeIfPresent(String.self, forKey: .state)
-        statusCode = try container.decodeIfPresent(Int.self, forKey: .statusCode)
-        statusMsg = try container.decodeIfPresent(String.self, forKey: .statusMsg)
-        runSuccess = try container.decodeIfPresent(Bool.self, forKey: .runSuccess)
-        runtime = try container.decodeIfPresent(String.self, forKey: .runtime)
-        memory = try container.decodeIfPresent(String.self, forKey: .memory)
-        totalCorrect = try container.decodeIfPresent(Int.self, forKey: .totalCorrect)
-        totalTestcases = try container.decodeIfPresent(Int.self, forKey: .totalTestcases)
+        state = try? container.decodeIfPresent(String.self, forKey: .state)
+        // statusCode can be Int or String from the API
+        if let intCode = try? container.decodeIfPresent(Int.self, forKey: .statusCode) {
+            statusCode = intCode
+        } else if let strCode = try? container.decodeIfPresent(String.self, forKey: .statusCode) {
+            statusCode = Int(strCode)
+        } else {
+            statusCode = nil
+        }
+        statusMsg = try? container.decodeIfPresent(String.self, forKey: .statusMsg)
+        runSuccess = try? container.decodeIfPresent(Bool.self, forKey: .runSuccess)
+        // runtime can be String or Int (milliseconds)
+        if let strRuntime = try? container.decodeIfPresent(String.self, forKey: .runtime) {
+            runtime = strRuntime
+        } else if let intRuntime = try? container.decodeIfPresent(Int.self, forKey: .runtime) {
+            runtime = "\(intRuntime) ms"
+        } else {
+            runtime = nil
+        }
+        // memory can be String or Int
+        if let strMemory = try? container.decodeIfPresent(String.self, forKey: .memory) {
+            memory = strMemory
+        } else if let intMemory = try? container.decodeIfPresent(Int.self, forKey: .memory) {
+            memory = "\(intMemory)"
+        } else {
+            memory = nil
+        }
+        totalCorrect = try? container.decodeIfPresent(Int.self, forKey: .totalCorrect)
+        totalTestcases = try? container.decodeIfPresent(Int.self, forKey: .totalTestcases)
         compareResult = try? container.decodeIfPresent(String.self, forKey: .compareResult)
         inputFormatted = try? container.decodeIfPresent(String.self, forKey: .inputFormatted)
         stdOutputList = try? container.decodeIfPresent([String].self, forKey: .stdOutputList)
