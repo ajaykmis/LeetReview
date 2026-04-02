@@ -39,18 +39,59 @@ struct ProblemDetailView: View {
         }
     }
 
+    @State private var showEditor = false
+
     @ViewBuilder
     private func detailContent(_ detail: ProblemDetail) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
-                headerSection(detail)
-                tagsSection(detail.topicTags)
-                sectionPicker
-                sectionContent(detail)
-                submissionsSection
-                Spacer(minLength: Theme.Spacing.xl)
+        ZStack(alignment: .bottomTrailing) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
+                    headerSection(detail)
+                    tagsSection(detail.topicTags)
+                    sectionPicker
+                    sectionContent(detail)
+                    submissionsSection
+                    Spacer(minLength: 80) // room for floating pill
+                }
+                .padding(Theme.Spacing.lg)
             }
-            .padding(Theme.Spacing.lg)
+
+            // Floating code editor pill
+            if let editorProblem = viewModel.editorProblem {
+                Button {
+                    showEditor = true
+                } label: {
+                    HStack(spacing: Theme.Spacing.sm) {
+                        Image(systemName: "chevron.left.forwardslash.chevron.right")
+                            .font(.body.bold())
+                        Text("Code")
+                            .font(.subheadline.bold())
+                    }
+                    .foregroundStyle(Theme.Colors.background)
+                    .padding(.horizontal, Theme.Spacing.lg)
+                    .padding(.vertical, Theme.Spacing.md)
+                    .background(Theme.Colors.accent)
+                    .clipShape(Capsule())
+                    .shadow(color: Theme.Colors.accent.opacity(0.4), radius: 8, y: 4)
+                }
+                .padding(.trailing, Theme.Spacing.lg)
+                .padding(.bottom, Theme.Spacing.xl)
+                .fullScreenCover(isPresented: $showEditor) {
+                    NavigationStack {
+                        CodeEditorView(problem: editorProblem)
+                            .toolbar {
+                                ToolbarItem(placement: .topBarLeading) {
+                                    Button {
+                                        showEditor = false
+                                    } label: {
+                                        Image(systemName: "xmark")
+                                            .foregroundStyle(Theme.Colors.text)
+                                    }
+                                }
+                            }
+                    }
+                }
+            }
         }
     }
 
@@ -86,21 +127,6 @@ struct ProblemDetailView: View {
                     value: viewModel.totalSubmissions ?? "--",
                     color: Theme.Colors.medium
                 )
-            }
-
-            if let editorProblem = viewModel.editorProblem {
-                NavigationLink {
-                    CodeEditorView(problem: editorProblem)
-                } label: {
-                    editorEntryRow(
-                        title: "Open Editor",
-                        subtitle: viewModel.editorLanguageCount == 1
-                            ? "Start solving in \(editorProblem.starterCodes.first?.languageName ?? "the editor")."
-                            : "Start solving with \(viewModel.editorLanguageCount) supported languages.",
-                        tint: Theme.Colors.accent
-                    )
-                }
-                .buttonStyle(.plain)
             }
 
             // Add to Review button
@@ -605,28 +631,6 @@ struct ProblemDetailView: View {
             return String(format: "%.1fK", Double(count) / 1_000)
         }
         return "\(count)"
-    }
-
-    private func editorEntryRow(title: String, subtitle: String, tint: Color) -> some View {
-        HStack(spacing: Theme.Spacing.md) {
-            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                Text(title)
-                    .font(.subheadline.bold())
-                    .foregroundStyle(Theme.Colors.text)
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundStyle(Theme.Colors.textSecondary)
-            }
-
-            Spacer()
-
-            Image(systemName: "chevron.right.circle.fill")
-                .font(.title3)
-                .foregroundStyle(tint)
-        }
-        .padding(Theme.Spacing.md)
-        .background(tint.opacity(0.12))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     @ViewBuilder
