@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - LeetReview</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; background: #1E1E2E; color: #CDD6F4; line-height: 1.7; }
+        .container { max-width: 720px; margin: 0 auto; padding: 40px 24px; }
+        h1 { font-size: 2rem; margin-bottom: 8px; }
+        .updated { color: #A6ADC8; font-size: 0.85rem; margin-bottom: 32px; }
+        h2 { font-size: 1.2rem; color: #89B4FA; margin-top: 32px; margin-bottom: 12px; }
+        p, li { color: #CDD6F4; font-size: 0.95rem; margin-bottom: 12px; }
+        ul { padding-left: 20px; margin-bottom: 12px; }
+        a { color: #89B4FA; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .back { display: inline-block; margin-bottom: 24px; color: #A6ADC8; font-size: 0.9rem; }
+        footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #2D2D3F; color: #A6ADC8; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back">&larr; Back to LeetReview</a>
+        <h1>Privacy Policy</h1>
+        <p class="updated">Last updated: April 2, 2026</p>
+
+        <h2>Overview</h2>
+        <p>LeetReview ("the App") is a mobile application for practicing LeetCode problems. Your privacy is important to us. This policy explains what data we collect, how it is used, and how it is protected.</p>
+
+        <h2>Data We Collect</h2>
+
+        <p><strong>LeetCode Session Credentials</strong></p>
+        <p>When you sign in with your LeetCode account, the App stores your session cookie and CSRF token in the iOS Keychain (encrypted, device-only storage). These credentials are used solely to authenticate API requests to LeetCode on your behalf. They are never transmitted to any server other than leetcode.com.</p>
+
+        <p><strong>Locally Stored Data</strong></p>
+        <p>The following data is stored entirely on your device and is never uploaded to any external server:</p>
+        <ul>
+            <li>Problem notes and bookmarks you create</li>
+            <li>Code drafts you write in the editor</li>
+            <li>Spaced repetition review history and schedules</li>
+            <li>Problem timer data</li>
+            <li>Cached problem details for offline access</li>
+            <li>Your language preference and app settings</li>
+        </ul>
+
+        <h2>Third-Party Services</h2>
+
+        <p><strong>LeetCode API</strong></p>
+        <p>The App communicates with LeetCode's servers (leetcode.com) to fetch problems, run code, submit solutions, and retrieve your profile data. This communication uses your LeetCode session credentials. We do not operate any intermediary server — all API calls go directly from your device to LeetCode.</p>
+
+        <p><strong>Firebase</strong></p>
+        <p>The App uses Firebase for basic analytics and crash reporting. Firebase may collect device information, app usage statistics, and crash logs. No personally identifiable information (such as your LeetCode username, code, or session tokens) is sent to Firebase. You can learn more about Firebase's data practices at <a href="https://firebase.google.com/support/privacy">firebase.google.com/support/privacy</a>.</p>
+
+        <p><strong>Google AdMob</strong></p>
+        <p>The App displays advertisements via Google AdMob. AdMob may collect device identifiers and usage data to serve personalized ads. You can opt out of personalized advertising in your iOS Settings under Privacy &amp; Security &gt; Tracking. You may also purchase the "Remove Ads" option within the App to disable all advertisements.</p>
+
+        <p><strong>Community Ratings Data</strong></p>
+        <p>The App fetches problem difficulty ratings from a publicly available community dataset. No personal data is sent in this request.</p>
+
+        <h2>Data Security</h2>
+        <ul>
+            <li>Session credentials are stored in the iOS Keychain with <code>.whenUnlockedThisDeviceOnly</code> protection — they cannot be accessed when the device is locked and are not included in backups.</li>
+            <li>Cached data uses iOS Complete File Protection encryption.</li>
+            <li>All network communication uses HTTPS.</li>
+            <li>The App restricts WebView navigation to leetcode.com domains only.</li>
+        </ul>
+
+        <h2>Data Sharing</h2>
+        <p>We do not sell, trade, or transfer your personal data to any third party. The only external communication is directly between your device and LeetCode's servers (for API functionality) and Firebase/AdMob (for analytics and advertising).</p>
+
+        <h2>Data Retention</h2>
+        <p>All user data is stored locally on your device. You can clear all cached data from Settings within the App. Uninstalling the App removes all locally stored data, including Keychain credentials.</p>
+
+        <h2>Children's Privacy</h2>
+        <p>The App is not directed at children under 13. We do not knowingly collect personal information from children.</p>
+
+        <h2>Changes to This Policy</h2>
+        <p>We may update this privacy policy from time to time. Changes will be reflected on this page with an updated date.</p>
+
+        <h2>Contact</h2>
+        <p>If you have questions about this privacy policy, please contact us at <a href="mailto:ajay.ait10@gmail.com">ajay.ait10@gmail.com</a>.</p>
+
+        <footer>
+            &copy; 2026 LeetReview. Not affiliated with LeetCode.
+        </footer>
+    </div>
+</body>
+</html>
