@@ -38,7 +38,7 @@ struct LeetReviewApp: App {
                     storeManager.startIfNeeded()
                 }
         }
-        .modelContainer(for: ReviewItem.self)
+        .modelContainer(for: [ReviewItem.self, ProblemNote.self, ProblemTimer.self])
     }
 
     // MARK: - URL Scheme Handler

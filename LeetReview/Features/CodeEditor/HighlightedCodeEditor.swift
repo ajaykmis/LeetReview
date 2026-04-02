@@ -48,36 +48,100 @@ struct HighlightedCodeEditor: UIViewRepresentable {
 
     // MARK: - Keyboard Toolbar
 
-    private func makeToolbar(for textView: UITextView, coordinator: Coordinator) -> UIToolbar {
-        let toolbar = UIToolbar(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 44))
-        toolbar.barStyle = .default
-        toolbar.isTranslucent = true
-        toolbar.barTintColor = UIColor(Theme.Colors.card)
-        toolbar.tintColor = UIColor(Theme.Colors.accent)
+    private func makeToolbar(for textView: UITextView, coordinator: Coordinator) -> UIView {
+        let containerHeight: CGFloat = 44
+        let container = UIView(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: containerHeight))
+        container.backgroundColor = UIColor(Theme.Colors.card)
+        container.autoresizingMask = .flexibleWidth
 
-        let keys = ["⇥", "{", "}", "(", ")", "[", "]", ";", "\"", "="]
-        var items: [UIBarButtonItem] = []
+        // Scrollable keys row
+        let scrollView = UIScrollView()
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(scrollView)
 
-        for (index, key) in keys.enumerated() {
-            let action = UIAction(title: key) { _ in
-                coordinator.insertText(key == "⇥" ? "    " : key, into: textView)
-            }
-            let button = UIBarButtonItem(title: key, primaryAction: action)
-            button.tag = index
-            items.append(button)
+        // Done button (fixed right)
+        let doneButton = UIButton(type: .system)
+        doneButton.setTitle("Done", for: .normal)
+        doneButton.titleLabel?.font = .boldSystemFont(ofSize: 15)
+        doneButton.tintColor = UIColor(Theme.Colors.accent)
+        doneButton.translatesAutoresizingMaskIntoConstraints = false
+        doneButton.addAction(UIAction { _ in textView.resignFirstResponder() }, for: .touchUpInside)
+        container.addSubview(doneButton)
+
+        NSLayoutConstraint.activate([
+            doneButton.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -12),
+            doneButton.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+            doneButton.widthAnchor.constraint(equalToConstant: 44),
+            scrollView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: doneButton.leadingAnchor, constant: -4),
+            scrollView.topAnchor.constraint(equalTo: container.topAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+        ])
+
+        // Key definitions: (label, inserted text)
+        let keys: [(String, String)] = [
+            ("TAB", "    "),
+            ("=", "="),
+            (";", ";"),
+            (":", ":"),
+            (".", "."),
+            ("(", "("),
+            (")", ")"),
+            ("{", "{"),
+            ("}", "}"),
+            ("[", "["),
+            ("]", "]"),
+            ("<", "<"),
+            (">", ">"),
+            ("\"", "\""),
+            ("'", "'"),
+            (",", ","),
+            ("+", "+"),
+            ("-", "-"),
+            ("*", "*"),
+            ("/", "/"),
+            ("!", "!"),
+            ("&", "&"),
+            ("|", "|"),
+            ("_", "_"),
+            ("#", "#"),
+        ]
+
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.spacing = 6
+        stackView.alignment = .center
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(stackView)
+
+        NSLayoutConstraint.activate([
+            stackView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor, constant: 8),
+            stackView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor, constant: -8),
+            stackView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+            stackView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
+            stackView.heightAnchor.constraint(equalTo: scrollView.frameLayoutGuide.heightAnchor),
+        ])
+
+        let bgColor = UIColor(Theme.Colors.background)
+        let textColor = UIColor(Theme.Colors.text)
+        let accentColor = UIColor(Theme.Colors.accent)
+
+        for (label, insertText) in keys {
+            let button = UIButton(type: .system)
+            button.setTitle(label, for: .normal)
+            button.titleLabel?.font = label == "TAB" ? .systemFont(ofSize: 12, weight: .semibold) : .monospacedSystemFont(ofSize: 16, weight: .medium)
+            button.setTitleColor(label == "TAB" ? accentColor : textColor, for: .normal)
+            button.backgroundColor = bgColor
+            button.layer.cornerRadius = 6
+            button.contentEdgeInsets = UIEdgeInsets(top: 6, left: label == "TAB" ? 12 : 10, bottom: 6, right: label == "TAB" ? 12 : 10)
+            button.addAction(UIAction { _ in
+                coordinator.insertText(insertText, into: textView)
+            }, for: .touchUpInside)
+            stackView.addArrangedSubview(button)
         }
 
-        items.append(UIBarButtonItem.flexibleSpace())
-
-        let doneAction = UIAction(title: "Done") { _ in
-            textView.resignFirstResponder()
-        }
-        let doneButton = UIBarButtonItem(title: "Done", primaryAction: doneAction)
-        doneButton.style = .done
-        items.append(doneButton)
-
-        toolbar.items = items
-        return toolbar
+        return container
     }
 
     // MARK: - Coordinator

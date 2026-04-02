@@ -240,26 +240,27 @@ struct ProfileView: View {
                     .font(.headline)
                     .foregroundStyle(Theme.Colors.text)
                 Spacer()
-                Text("Last 8 weeks")
+                Text("Last 20 weeks")
                     .font(.caption)
                     .foregroundStyle(Theme.Colors.textSecondary)
             }
 
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 7), spacing: 6) {
-                ForEach(viewModel.heatmapDays) { day in
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(heatmapColor(for: day.intensity))
-                        .frame(height: 22)
-                        .overlay(alignment: .bottomTrailing) {
-                            if day.count > 0 {
-                                Text("\(min(day.count, 9))")
-                                    .font(.system(size: 8, weight: .bold, design: .rounded))
-                                    .foregroundStyle(Theme.Colors.background.opacity(0.9))
-                                    .padding(3)
+            ScrollView(.horizontal, showsIndicators: false) {
+                let days = viewModel.heatmapDays
+                let weeks = stride(from: 0, to: days.count, by: 7).map { Array(days[$0..<min($0 + 7, days.count)]) }
+                HStack(spacing: 4) {
+                    ForEach(Array(weeks.enumerated()), id: \.offset) { _, week in
+                        VStack(spacing: 4) {
+                            ForEach(week) { day in
+                                RoundedRectangle(cornerRadius: 3)
+                                    .fill(heatmapColor(for: day.intensity))
+                                    .frame(width: 16, height: 16)
                             }
                         }
+                    }
                 }
             }
+            .defaultScrollAnchor(.trailing)
 
             Text("Accepted-submission activity is approximated from the recent submissions payload until a full calendar API is wired.")
                 .font(.caption)

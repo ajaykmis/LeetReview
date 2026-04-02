@@ -86,7 +86,8 @@ final class ProfileViewModel {
             return Calendar.current.startOfDay(for: date)
         }, by: { $0 })
 
-        return (0..<56).reversed().map { offset in
+        // Show last 20 weeks (140 days) to match CoderGym's longer heatmap
+        return (0..<140).reversed().map { offset in
             let date = Calendar.current.date(byAdding: .day, value: -offset, to: today) ?? today
             let count = grouped[date]?.count ?? 0
             let intensity = min(count, 4)

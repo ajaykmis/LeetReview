@@ -149,14 +149,11 @@ struct DashboardView: View {
                 .buttonStyle(.plain)
 
                 NavigationLink {
-                    AuthenticatedBrowserPage(
-                        title: "Practice",
-                        url: URL(string: "https://leetcode.com/problemset/")!
-                    )
+                    ProblemListView()
                 } label: {
                     ActionCard(
                         title: "Practice",
-                        subtitle: "Open the full problemset",
+                        subtitle: "Browse all problems",
                         systemImage: "terminal",
                         tint: Theme.Colors.easy
                     )
