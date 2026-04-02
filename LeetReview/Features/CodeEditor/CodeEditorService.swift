@@ -7,13 +7,10 @@ protocol CodeEditorServicing: Sendable {
 
 struct LiveCodeEditorService: CodeEditorServicing {
     func runCode(_ request: CodeExecutionRequest) async throws -> CodeExecutionResult {
-        let hasSession = AuthManager.hasSessionCredentials()
-        let sessionLen = AuthManager.getSessionCookie()?.count ?? 0
-        let csrfLen = AuthManager.getCSRFToken()?.count ?? 0
-        guard hasSession else {
+        guard AuthManager.hasSessionCredentials() else {
             return CodeExecutionResult(
                 status: .blocked,
-                statusMessage: "No LeetCode session found (session: \(sessionLen) chars, csrf: \(csrfLen) chars). Please log out and sign in again with LeetCode.",
+                statusMessage: "No LeetCode session. Please sign in.",
                 completedCaseCount: 0,
                 totalCaseCount: request.testCases.count,
                 testCaseResults: [],
@@ -37,35 +34,8 @@ struct LiveCodeEditorService: CodeEditorServicing {
             throw APIError.noData
         }
 
-        let result = try await pollUntilComplete(id: executionID)
-        let totalCases = result.totalTestcases ?? request.testCases.count
-        let completed = result.totalCorrect ?? 0
-
-        let testCaseResults = buildTestCaseResults(from: result, request: request)
-
-        let hasCompileError = result.fullCompileError != nil && !(result.fullCompileError?.isEmpty ?? true)
-        let hasRuntimeError = result.fullRuntimeError != nil && !(result.fullRuntimeError?.isEmpty ?? true)
-
-        let status: CodeExecutionStatus
-        if hasCompileError || hasRuntimeError {
-            status = .blocked
-        } else if result.runSuccess == true && (result.statusMsg?.localizedCaseInsensitiveContains("accepted") == true || completed >= totalCases) {
-            status = .passed
-        } else {
-            status = .failed
-        }
-
-        return CodeExecutionResult(
-            status: status,
-            statusMessage: result.statusMsg ?? "Execution finished.",
-            completedCaseCount: completed,
-            totalCaseCount: totalCases,
-            testCaseResults: testCaseResults,
-            compileError: result.fullCompileError ?? result.compileError,
-            runtimeError: result.fullRuntimeError ?? result.runtimeError,
-            runtime: result.statusRuntime ?? result.runtime,
-            memory: result.statusMemory ?? result.memory
-        )
+        let json = try await pollUntilComplete(id: executionID)
+        return parseRunResult(json: json, request: request)
     }
 
     func submitCode(_ request: CodeExecutionRequest) async throws -> CodeSubmissionResult {
@@ -97,97 +67,142 @@ struct LiveCodeEditorService: CodeEditorServicing {
             throw APIError.noData
         }
 
-        let result = try await pollUntilComplete(id: "\(submissionID)")
-        let totalCases = result.totalTestcases ?? request.testCases.count
-        let passedCases = result.totalCorrect ?? 0
-        let summary = result.statusMsg ?? "Submission finished."
+        let json = try await pollUntilComplete(id: "\(submissionID)")
+        return parseSubmitResult(json: json, request: request)
+    }
 
-        return CodeSubmissionResult(
-            status: mapSubmissionStatus(summary: summary, runSuccess: result.runSuccess),
-            summary: summary,
-            passedCaseCount: passedCases,
-            totalCaseCount: totalCases,
-            performance: buildPerformance(from: result),
-            lastTestcaseInput: result.lastTestcase,
-            lastExpectedOutput: result.expectedOutput,
-            lastCodeOutput: result.codeOutput?.first ?? result.codeAnswer?.first,
-            compileError: result.fullCompileError ?? result.compileError,
-            runtimeError: result.fullRuntimeError ?? result.runtimeError
+    // MARK: - Polling (matches CoderGym: 2s interval, 5 attempts)
+
+    private func pollUntilComplete(id: String) async throws -> [String: Any] {
+        for _ in 0..<5 {
+            try await Task.sleep(for: .seconds(2))
+            let json = try await fetchCheckResult(id: id)
+            let state = (json["state"] as? String)?.uppercased() ?? ""
+            if state != "PENDING" && state != "STARTED" {
+                return json
+            }
+        }
+        // Final attempt
+        return try await fetchCheckResult(id: id)
+    }
+
+    private func fetchCheckResult(id: String) async throws -> [String: Any] {
+        let data = try await LeetCodeAPI.shared.checkSubmission(id: id)
+        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw APIError.noData
+        }
+        return json
+    }
+
+    // MARK: - Run result parsing (raw JSON, like CoderGym)
+
+    private func parseRunResult(json: [String: Any], request: CodeExecutionRequest) -> CodeExecutionResult {
+        let statusMsg = json["status_msg"] as? String ?? "Unknown"
+        let totalCorrect = json["total_correct"] as? Int ?? 0
+        let totalTestcases = json["total_testcases"] as? Int ?? request.testCases.count
+
+        // code_answer: array of any -> convert each element to String
+        let codeAnswer: [String] = (json["code_answer"] as? [Any])?.map { "\($0)" } ?? []
+        let expectedCodeAnswer: [String] = (json["expected_code_answer"] as? [Any])?.map { "\($0)" } ?? []
+        let stdOutputList: [String] = (json["std_output_list"] as? [Any])?.map { "\($0)" } ?? []
+        let compareResult = json["compare_result"] as? String ?? ""
+
+        let compileError = json["full_compile_error"] as? String ?? json["compile_error"] as? String
+        let runtimeError = json["full_runtime_error"] as? String ?? json["runtime_error"] as? String
+        let statusRuntime = json["status_runtime"] as? String
+        let statusMemory = json["status_memory"] as? String
+
+        // Build per-test-case results
+        let count = max(codeAnswer.count, expectedCodeAnswer.count, 1)
+        let inputs = request.testCases.map(\.input)
+
+        var testCaseResults: [TestCaseResult] = []
+        if compileError == nil && runtimeError == nil {
+            for i in 0..<count {
+                let passed: Bool
+                if i < compareResult.count {
+                    let idx = compareResult.index(compareResult.startIndex, offsetBy: i)
+                    passed = compareResult[idx] == "1"
+                } else {
+                    passed = i < codeAnswer.count && i < expectedCodeAnswer.count && codeAnswer[i] == expectedCodeAnswer[i]
+                }
+                testCaseResults.append(TestCaseResult(
+                    index: i,
+                    input: i < inputs.count ? inputs[i] : "",
+                    expectedOutput: i < expectedCodeAnswer.count ? expectedCodeAnswer[i] : "",
+                    actualOutput: i < codeAnswer.count ? codeAnswer[i] : "",
+                    stdOutput: i < stdOutputList.count ? stdOutputList[i] : "",
+                    passed: passed
+                ))
+            }
+        }
+
+        let status: CodeExecutionStatus
+        if compileError != nil || runtimeError != nil {
+            status = .blocked
+        } else if totalCorrect >= totalTestcases && statusMsg.lowercased().contains("accepted") {
+            status = .passed
+        } else {
+            status = .failed
+        }
+
+        return CodeExecutionResult(
+            status: status,
+            statusMessage: statusMsg,
+            completedCaseCount: totalCorrect,
+            totalCaseCount: totalTestcases,
+            testCaseResults: testCaseResults,
+            compileError: compileError,
+            runtimeError: runtimeError,
+            runtime: statusRuntime,
+            memory: statusMemory
         )
     }
 
-    private func pollUntilComplete(id: String) async throws -> SubmissionCheckResult {
-        for _ in 0..<12 {
-            let result = try await LeetCodeAPI.shared.checkSubmission(id: id)
-            let state = result.state?.lowercased()
-            if state != "start" && state != "pending" {
-                return result
-            }
-            try await Task.sleep(for: .milliseconds(800))
-        }
+    // MARK: - Submit result parsing (raw JSON, like CoderGym)
 
-        return try await LeetCodeAPI.shared.checkSubmission(id: id)
-    }
+    private func parseSubmitResult(json: [String: Any], request: CodeExecutionRequest) -> CodeSubmissionResult {
+        let statusMsg = json["status_msg"] as? String ?? "Unknown"
+        let totalCorrect = json["total_correct"] as? Int ?? 0
+        let totalTestcases = json["total_testcases"] as? Int ?? request.testCases.count
+        let statusRuntime = json["status_runtime"] as? String
+        let statusMemory = json["status_memory"] as? String
+        let runtimePercentile = json["runtime_percentile"] as? Double
+        let memoryPercentile = json["memory_percentile"] as? Double
+        let compileError = json["full_compile_error"] as? String ?? json["compile_error"] as? String
+        let runtimeError = json["full_runtime_error"] as? String ?? json["runtime_error"] as? String
+        let lastTestcase = json["last_testcase"] as? String
+        let expectedOutput = json["expected_output"] as? String
+        let codeOutput = (json["code_output"] as? [Any])?.first.map { "\($0)" } ?? (json["code_output"] as? String)
 
-    private func buildTestCaseResults(from result: SubmissionCheckResult, request: CodeExecutionRequest) -> [TestCaseResult] {
-        let answers = result.codeAnswer ?? []
-        let expected = result.expectedCodeAnswer ?? []
-        let stdOutputs = result.stdOutputList ?? []
-        let compareStr = result.compareResult ?? ""
-        let inputs = request.testCases.map(\.input)
+        let status: CodeSubmissionStatus
+        let normalized = statusMsg.lowercased()
+        if normalized.contains("accepted") { status = .accepted }
+        else if normalized.contains("compile") { status = .compileError }
+        else if normalized.contains("runtime") { status = .runtimeError }
+        else if normalized.contains("wrong") { status = .wrongAnswer }
+        else { status = .runtimeError }
 
-        let count = max(answers.count, expected.count)
-        guard count > 0 else { return [] }
-
-        return (0..<count).map { i in
-            let passed: Bool
-            if i < compareStr.count {
-                let charIndex = compareStr.index(compareStr.startIndex, offsetBy: i)
-                passed = compareStr[charIndex] == "1"
-            } else {
-                passed = i < answers.count && i < expected.count && answers[i] == expected[i]
-            }
-
-            return TestCaseResult(
-                index: i,
-                input: i < inputs.count ? inputs[i] : "",
-                expectedOutput: i < expected.count ? expected[i] : "",
-                actualOutput: i < answers.count ? answers[i] : "",
-                stdOutput: i < stdOutputs.count ? stdOutputs[i] : "",
-                passed: passed
+        var performance: CodePerformanceSnapshot? = nil
+        if status == .accepted, let rt = statusRuntime, let mem = statusMemory {
+            performance = CodePerformanceSnapshot(
+                runtime: rt, memory: mem,
+                runtimePercentile: runtimePercentile,
+                memoryPercentile: memoryPercentile
             )
         }
-    }
 
-    private func mapSubmissionStatus(summary: String, runSuccess: Bool?) -> CodeSubmissionStatus {
-        let normalized = summary.lowercased()
-        if normalized.contains("accepted") {
-            return .accepted
-        }
-        if normalized.contains("compile error") {
-            return .compileError
-        }
-        if normalized.contains("runtime error") {
-            return .runtimeError
-        }
-        if runSuccess == false || normalized.contains("wrong answer") {
-            return .wrongAnswer
-        }
-        return .runtimeError
-    }
-
-    private func buildPerformance(from result: SubmissionCheckResult) -> CodePerformanceSnapshot? {
-        let rt = result.statusRuntime ?? result.runtime
-        let mem = result.statusMemory ?? result.memory
-        guard rt != nil || mem != nil else {
-            return nil
-        }
-
-        return CodePerformanceSnapshot(
-            runtime: rt ?? "--",
-            memory: mem ?? "--",
-            runtimePercentile: result.runtimePercentile,
-            memoryPercentile: result.memoryPercentile
+        return CodeSubmissionResult(
+            status: status,
+            summary: statusMsg,
+            passedCaseCount: totalCorrect,
+            totalCaseCount: totalTestcases,
+            performance: performance,
+            lastTestcaseInput: lastTestcase,
+            lastExpectedOutput: expectedOutput,
+            lastCodeOutput: codeOutput,
+            compileError: compileError,
+            runtimeError: runtimeError
         )
     }
 }

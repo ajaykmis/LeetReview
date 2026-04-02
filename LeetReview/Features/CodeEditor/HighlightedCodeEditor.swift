@@ -486,9 +486,23 @@ struct HighlightedCodeEditor: UIViewRepresentable {
             }
         }
 
+        private let toolbarBracketPairs: [String: String] = [
+            "(": ")", "{": "}", "[": "]"
+        ]
+
         nonisolated func insertText(_ text: String, into textView: UITextView) {
             MainActor.assumeIsolated {
-                textView.insertText(text)
+                // Auto-close brackets when inserted from toolbar
+                if let closing = toolbarBracketPairs[text] {
+                    textView.insertText(text + closing)
+                    // Move cursor between the pair
+                    if let pos = textView.selectedTextRange?.start,
+                       let newPos = textView.position(from: pos, offset: -1) {
+                        textView.selectedTextRange = textView.textRange(from: newPos, to: newPos)
+                    }
+                } else {
+                    textView.insertText(text)
+                }
             }
         }
 

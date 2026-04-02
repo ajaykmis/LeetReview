@@ -355,19 +355,20 @@ actor LeetCodeAPI {
         throw APIError.noData
     }
 
-    func checkSubmission(id: String) async throws -> SubmissionCheckResult {
+    func checkSubmission(id: String) async throws -> Data {
         let sanitizedId = id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? id
         guard let url = URL(string: "/submissions/detail/\(sanitizedId)/check/", relativeTo: baseURL)?.absoluteURL else {
             throw APIError.noData
         }
         let request = authenticatedRequest(url: url, referer: nil)
-        // Decode directly from raw response data (not via JSONSerialization round-trip)
         let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse,
               (200...299).contains(httpResponse.statusCode) else {
-            throw APIError.noData
+            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+            let bodyPreview = String(data: data.prefix(200), encoding: .utf8) ?? "no body"
+            throw APIError.httpError(statusCode: statusCode, detail: bodyPreview)
         }
-        return try JSONDecoder().decode(SubmissionCheckResult.self, from: data)
+        return data
     }
 
     private func authenticatedRequest(url: URL, referer: String?) -> URLRequest {
@@ -875,154 +876,3 @@ enum CodeExecutionHandle {
     case submission(id: Int)
 }
 
-struct SubmissionCheckResult: Decodable {
-    let state: String?
-    let statusCode: Int?
-    let statusMsg: String?
-    let runSuccess: Bool?
-    let runtime: String?
-    let memory: String?
-    let totalCorrect: Int?
-    let totalTestcases: Int?
-    let compareResult: String?
-    let codeAnswer: [String]?
-    let expectedCodeAnswer: [String]?
-    let inputFormatted: String?
-    let stdOutputList: [String]?
-    let codeOutput: [String]?
-    let compileError: String?
-    let fullCompileError: String?
-    let runtimeError: String?
-    let fullRuntimeError: String?
-    let statusRuntime: String?
-    let statusMemory: String?
-    let runtimePercentile: Double?
-    let memoryPercentile: Double?
-    let correctAnswer: Bool?
-    let lastTestcase: String?
-    let expectedOutput: String?
-
-    private enum CodingKeys: String, CodingKey {
-        case state
-        case statusCode = "status_code"
-        case statusMsg = "status_msg"
-        case runSuccess = "run_success"
-        case runtime
-        case memory
-        case totalCorrect = "total_correct"
-        case totalTestcases = "total_testcases"
-        case compareResult = "compare_result"
-        case codeAnswer = "code_answer"
-        case expectedCodeAnswer = "expected_code_answer"
-        case inputFormatted = "input_formatted"
-        case stdOutputList = "std_output_list"
-        case codeOutput = "code_output"
-        case compileError = "compile_error"
-        case fullCompileError = "full_compile_error"
-        case runtimeError = "runtime_error"
-        case fullRuntimeError = "full_runtime_error"
-        case statusRuntime = "status_runtime"
-        case statusMemory = "status_memory"
-        case runtimePercentile = "runtime_percentile"
-        case memoryPercentile = "memory_percentile"
-        case correctAnswer = "correct_answer"
-        case lastTestcase = "last_testcase"
-        case expectedOutput = "expected_output"
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        state = try? container.decodeIfPresent(String.self, forKey: .state)
-        // statusCode can be Int or String from the API
-        if let intCode = try? container.decodeIfPresent(Int.self, forKey: .statusCode) {
-            statusCode = intCode
-        } else if let strCode = try? container.decodeIfPresent(String.self, forKey: .statusCode) {
-            statusCode = Int(strCode)
-        } else {
-            statusCode = nil
-        }
-        statusMsg = try? container.decodeIfPresent(String.self, forKey: .statusMsg)
-        runSuccess = try? container.decodeIfPresent(Bool.self, forKey: .runSuccess)
-        // runtime can be String or Int (milliseconds)
-        if let strRuntime = try? container.decodeIfPresent(String.self, forKey: .runtime) {
-            runtime = strRuntime
-        } else if let intRuntime = try? container.decodeIfPresent(Int.self, forKey: .runtime) {
-            runtime = "\(intRuntime) ms"
-        } else {
-            runtime = nil
-        }
-        // memory can be String or Int
-        if let strMemory = try? container.decodeIfPresent(String.self, forKey: .memory) {
-            memory = strMemory
-        } else if let intMemory = try? container.decodeIfPresent(Int.self, forKey: .memory) {
-            memory = "\(intMemory)"
-        } else {
-            memory = nil
-        }
-        totalCorrect = try? container.decodeIfPresent(Int.self, forKey: .totalCorrect)
-        totalTestcases = try? container.decodeIfPresent(Int.self, forKey: .totalTestcases)
-        compareResult = try? container.decodeIfPresent(String.self, forKey: .compareResult)
-        inputFormatted = try? container.decodeIfPresent(String.self, forKey: .inputFormatted)
-        stdOutputList = try? container.decodeIfPresent([String].self, forKey: .stdOutputList)
-        compileError = try? container.decodeIfPresent(String.self, forKey: .compileError)
-        fullCompileError = try? container.decodeIfPresent(String.self, forKey: .fullCompileError)
-        runtimeError = try? container.decodeIfPresent(String.self, forKey: .runtimeError)
-        fullRuntimeError = try? container.decodeIfPresent(String.self, forKey: .fullRuntimeError)
-        statusRuntime = try? container.decodeIfPresent(String.self, forKey: .statusRuntime)
-        statusMemory = try? container.decodeIfPresent(String.self, forKey: .statusMemory)
-        runtimePercentile = try? container.decodeIfPresent(Double.self, forKey: .runtimePercentile)
-        memoryPercentile = try? container.decodeIfPresent(Double.self, forKey: .memoryPercentile)
-        correctAnswer = try? container.decodeIfPresent(Bool.self, forKey: .correctAnswer)
-        lastTestcase = try? container.decodeIfPresent(String.self, forKey: .lastTestcase)
-        expectedOutput = try? container.decodeIfPresent(String.self, forKey: .expectedOutput)
-
-        // code_answer and expected_code_answer can be [String] or other JSON types
-        // Try [String] first, then try decoding as generic JSON array and stringify
-        if let arr = try? container.decodeIfPresent([String].self, forKey: .codeAnswer) {
-            codeAnswer = arr
-        } else if let anyArr = try? container.decodeIfPresent([AnyCodable].self, forKey: .codeAnswer) {
-            codeAnswer = anyArr.map(\.stringValue)
-        } else {
-            codeAnswer = nil
-        }
-
-        if let arr = try? container.decodeIfPresent([String].self, forKey: .expectedCodeAnswer) {
-            expectedCodeAnswer = arr
-        } else if let anyArr = try? container.decodeIfPresent([AnyCodable].self, forKey: .expectedCodeAnswer) {
-            expectedCodeAnswer = anyArr.map(\.stringValue)
-        } else {
-            expectedCodeAnswer = nil
-        }
-
-        // code_output can be either a String or [String] from the API
-        if let array = try? container.decodeIfPresent([String].self, forKey: .codeOutput) {
-            codeOutput = array
-        } else if let single = try? container.decodeIfPresent(String.self, forKey: .codeOutput) {
-            codeOutput = [single]
-        } else {
-            codeOutput = nil
-        }
-    }
-}
-
-/// Decodes any JSON value and provides a string representation.
-private struct AnyCodable: Decodable {
-    let stringValue: String
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let str = try? container.decode(String.self) {
-            stringValue = str
-        } else if let int = try? container.decode(Int.self) {
-            stringValue = String(int)
-        } else if let double = try? container.decode(Double.self) {
-            stringValue = String(double)
-        } else if let bool = try? container.decode(Bool.self) {
-            stringValue = String(bool)
-        } else if container.decodeNil() {
-            stringValue = "null"
-        } else {
-            stringValue = "?"
-        }
-    }
-}
