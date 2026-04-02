@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
     @Environment(AuthManager.self) private var authManager
@@ -20,84 +21,17 @@ struct ContentView: View {
 struct MainTabView: View {
     var body: some View {
         TabView {
-            DashboardPlaceholderView()
+            DashboardView()
                 .tabItem { Label("Dashboard", systemImage: "house.fill") }
-            ProblemsPlaceholderView()
+            ProblemListView()
                 .tabItem { Label("Problems", systemImage: "list.bullet.rectangle.fill") }
-            ReviewPlaceholderView()
+            ReviewSessionView()
                 .tabItem { Label("Review", systemImage: "arrow.counterclockwise.circle.fill") }
-            ProfilePlaceholderView()
+            ProfileView()
                 .tabItem { Label("Profile", systemImage: "person.fill") }
-            SettingsPlaceholderView()
+            SettingsView()
                 .tabItem { Label("Settings", systemImage: "gearshape.fill") }
         }
         .tint(Theme.Colors.accent)
-    }
-}
-
-// MARK: - Placeholder Views (Stage 2+)
-
-struct DashboardPlaceholderView: View {
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                Theme.Colors.background.ignoresSafeArea()
-                Text("Dashboard — Coming in Stage 2")
-                    .foregroundStyle(Theme.Colors.text)
-            }
-            .navigationTitle("Dashboard")
-        }
-    }
-}
-
-struct ProblemsPlaceholderView: View {
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                Theme.Colors.background.ignoresSafeArea()
-                Text("Problems — Coming in Stage 2")
-                    .foregroundStyle(Theme.Colors.text)
-            }
-            .navigationTitle("Problems")
-        }
-    }
-}
-
-struct ReviewPlaceholderView: View {
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                Theme.Colors.background.ignoresSafeArea()
-                Text("Review — Coming in Stage 5")
-                    .foregroundStyle(Theme.Colors.text)
-            }
-            .navigationTitle("Review")
-        }
-    }
-}
-
-struct ProfilePlaceholderView: View {
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                Theme.Colors.background.ignoresSafeArea()
-                Text("Profile — Coming in Stage 4")
-                    .foregroundStyle(Theme.Colors.text)
-            }
-            .navigationTitle("Profile")
-        }
-    }
-}
-
-struct SettingsPlaceholderView: View {
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                Theme.Colors.background.ignoresSafeArea()
-                Text("Settings — Coming in Stage 4")
-                    .foregroundStyle(Theme.Colors.text)
-            }
-            .navigationTitle("Settings")
-        }
     }
 }

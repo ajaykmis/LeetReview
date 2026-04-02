@@ -17,7 +17,7 @@ actor LeetCodeAPI {
 
     func query<T: Decodable>(
         _ queryString: String,
-        variables: [String: Any] = [:],
+        variables: sending [String: Any] = [:],
         responseType: T.Type
     ) async throws -> T {
         var request = URLRequest(url: endpoint)
@@ -80,8 +80,17 @@ actor LeetCodeAPI {
     func fetchProblemList(
         limit: Int = 50,
         skip: Int = 0,
-        filters: [String: Any] = [:]
+        difficulty: String? = nil,
+        status: String? = nil,
+        searchKeywords: String? = nil,
+        tags: [String]? = nil
     ) async throws -> ProblemListResult {
+        var filters: [String: Any] = [:]
+        if let difficulty { filters["difficulty"] = difficulty }
+        if let status { filters["status"] = status }
+        if let searchKeywords, !searchKeywords.isEmpty { filters["searchKeywords"] = searchKeywords }
+        if let tags, !tags.isEmpty { filters["tags"] = tags }
+
         let variables: [String: Any] = [
             "categorySlug": "",
             "limit": limit,
