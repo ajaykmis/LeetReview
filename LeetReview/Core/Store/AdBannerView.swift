@@ -10,8 +10,6 @@ struct AdBannerView: View {
 
     var body: some View {
         if storeManager.shouldShowAds {
-            // TODO: Replace with real GADBannerView (UIViewRepresentable)
-            // once Google-Mobile-Ads-SDK is added via SPM.
             VStack(spacing: 4) {
                 Text("Ad")
                     .font(.caption2.bold())
@@ -20,6 +18,7 @@ struct AdBannerView: View {
             .frame(maxWidth: .infinity)
             .frame(height: 50)
             .background(Theme.Colors.card.opacity(0.8))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
 }

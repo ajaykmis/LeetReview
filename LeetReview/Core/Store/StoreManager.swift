@@ -19,12 +19,20 @@ final class StoreManager {
     private var transactionListener: Task<Void, Never>?
 
     init() {
+        // Defer product loading to avoid blocking app launch
         transactionListener = listenForTransactions()
+    }
+
+    func startIfNeeded() {
+        guard !hasStarted else { return }
+        hasStarted = true
         Task {
             await loadProducts()
             await checkPurchaseStatus()
         }
     }
+
+    private var hasStarted = false
 
     func cancelListener() {
         transactionListener?.cancel()

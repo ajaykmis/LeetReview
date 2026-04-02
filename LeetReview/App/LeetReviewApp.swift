@@ -30,6 +30,9 @@ struct LeetReviewApp: App {
                 .onOpenURL { url in
                     handleURLScheme(url)
                 }
+                .task {
+                    storeManager.startIfNeeded()
+                }
         }
         .modelContainer(for: ReviewItem.self)
     }
