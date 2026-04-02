@@ -200,7 +200,7 @@ final class CodeEditorViewModel {
         } catch {
             runResult = CodeExecutionResult(
                 status: .blocked,
-                statusMessage: "The run request failed: \(error.localizedDescription)",
+                statusMessage: "Run failed: \(error.localizedDescription). Try logging out and back in.",
                 completedCaseCount: 0,
                 totalCaseCount: testCases.count,
                 testCaseResults: [],
