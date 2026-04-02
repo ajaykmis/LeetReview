@@ -6,6 +6,8 @@ struct CodeEditorView: View {
     @State private var showTestCases = false
     @State private var showRunResult = false
     @State private var showSubmitResult = false
+    @State private var runResultVersion = 0
+    @State private var submitResultVersion = 0
 
     init(
         problem: CodeEditorProblemSnapshot,
@@ -86,11 +88,17 @@ struct CodeEditorView: View {
         .sheet(isPresented: $showSubmitResult) {
             submitResultSheet
         }
-        .onChange(of: viewModel.runResult != nil) { _, hasResult in
-            if hasResult { showRunResult = true }
+        .onChange(of: viewModel.isRunning) { _, isRunning in
+            if !isRunning && viewModel.runResult != nil {
+                runResultVersion += 1
+                showRunResult = true
+            }
         }
-        .onChange(of: viewModel.submissionResult != nil) { _, hasResult in
-            if hasResult { showSubmitResult = true }
+        .onChange(of: viewModel.isSubmitting) { _, isSubmitting in
+            if !isSubmitting && viewModel.submissionResult != nil {
+                submitResultVersion += 1
+                showSubmitResult = true
+            }
         }
     }
 
