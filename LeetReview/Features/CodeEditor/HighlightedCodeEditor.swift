@@ -123,36 +123,33 @@ struct HighlightedCodeEditor: UIViewRepresentable {
         let row1Scroll = makeScrollableRow(row1Keys)
         container.addSubview(row1Scroll)
 
-        // Row 2: symbols + undo/redo/done pinned right
+        // Undo/Redo pinned left of row 2
+        let undoBtn = UIButton(type: .system)
+        undoBtn.setImage(UIImage(systemName: "arrow.uturn.backward")?.withConfiguration(UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)), for: .normal)
+        undoBtn.tintColor = accentColor
+        undoBtn.translatesAutoresizingMaskIntoConstraints = false
+        undoBtn.addAction(UIAction { _ in textView.undoManager?.undo() }, for: .touchUpInside)
+        container.addSubview(undoBtn)
+
+        let redoBtn = UIButton(type: .system)
+        redoBtn.setImage(UIImage(systemName: "arrow.uturn.forward")?.withConfiguration(UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)), for: .normal)
+        redoBtn.tintColor = accentColor
+        redoBtn.translatesAutoresizingMaskIntoConstraints = false
+        redoBtn.addAction(UIAction { _ in textView.undoManager?.redo() }, for: .touchUpInside)
+        container.addSubview(redoBtn)
+
+        // Row 2: symbols scrollable in the middle
         let row2Scroll = makeScrollableRow(row2Keys)
         container.addSubview(row2Scroll)
 
-        // Undo/Redo/Done in row 2, pinned right
-        let actionStack = UIStackView()
-        actionStack.axis = .horizontal
-        actionStack.spacing = 2
-        actionStack.translatesAutoresizingMaskIntoConstraints = false
-        container.addSubview(actionStack)
-
-        let undoBtn = UIButton(type: .system)
-        undoBtn.setImage(UIImage(systemName: "arrow.uturn.backward")?.withConfiguration(UIImage.SymbolConfiguration(pointSize: 13)), for: .normal)
-        undoBtn.tintColor = accentColor
-        undoBtn.addAction(UIAction { _ in textView.undoManager?.undo() }, for: .touchUpInside)
-
-        let redoBtn = UIButton(type: .system)
-        redoBtn.setImage(UIImage(systemName: "arrow.uturn.forward")?.withConfiguration(UIImage.SymbolConfiguration(pointSize: 13)), for: .normal)
-        redoBtn.tintColor = accentColor
-        redoBtn.addAction(UIAction { _ in textView.undoManager?.redo() }, for: .touchUpInside)
-
+        // Done pinned right of row 2
         let doneBtn = UIButton(type: .system)
         doneBtn.setTitle("Done", for: .normal)
-        doneBtn.titleLabel?.font = .boldSystemFont(ofSize: 13)
+        doneBtn.titleLabel?.font = .boldSystemFont(ofSize: 15)
         doneBtn.tintColor = accentColor
+        doneBtn.translatesAutoresizingMaskIntoConstraints = false
         doneBtn.addAction(UIAction { _ in textView.resignFirstResponder() }, for: .touchUpInside)
-
-        actionStack.addArrangedSubview(undoBtn)
-        actionStack.addArrangedSubview(redoBtn)
-        actionStack.addArrangedSubview(doneBtn)
+        container.addSubview(doneBtn)
 
         NSLayoutConstraint.activate([
             separator.topAnchor.constraint(equalTo: container.topAnchor),
@@ -166,14 +163,23 @@ struct HighlightedCodeEditor: UIViewRepresentable {
             row1Scroll.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             row1Scroll.heightAnchor.constraint(equalToConstant: rowHeight),
 
-            // Row 2: left side scrollable, right side pinned actions
+            // Row 2: undo/redo pinned left, symbols scrollable middle, done pinned right
+            undoBtn.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 8),
+            undoBtn.centerYAnchor.constraint(equalTo: row1Scroll.bottomAnchor, constant: 2 + rowHeight / 2),
+            undoBtn.widthAnchor.constraint(equalToConstant: 36),
+
+            redoBtn.leadingAnchor.constraint(equalTo: undoBtn.trailingAnchor, constant: 4),
+            redoBtn.centerYAnchor.constraint(equalTo: undoBtn.centerYAnchor),
+            redoBtn.widthAnchor.constraint(equalToConstant: 36),
+
             row2Scroll.topAnchor.constraint(equalTo: row1Scroll.bottomAnchor, constant: 2),
-            row2Scroll.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-            row2Scroll.trailingAnchor.constraint(equalTo: actionStack.leadingAnchor, constant: -4),
+            row2Scroll.leadingAnchor.constraint(equalTo: redoBtn.trailingAnchor, constant: 4),
+            row2Scroll.trailingAnchor.constraint(equalTo: doneBtn.leadingAnchor, constant: -4),
             row2Scroll.heightAnchor.constraint(equalToConstant: rowHeight),
 
-            actionStack.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -8),
-            actionStack.centerYAnchor.constraint(equalTo: row2Scroll.centerYAnchor),
+            doneBtn.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -8),
+            doneBtn.centerYAnchor.constraint(equalTo: undoBtn.centerYAnchor),
+            doneBtn.widthAnchor.constraint(equalToConstant: 48),
         ])
 
         return container
