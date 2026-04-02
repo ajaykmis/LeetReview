@@ -1,0 +1,421 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		527CA9B025E55167A416B9E6 /* LeetCodeAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D32E23CC7D08150130C2057 /* LeetCodeAPI.swift */; };
+		778FE424BDFDB0559237B352 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F0069EE9C3CE69280CF81BB /* AuthManager.swift */; };
+		8BBC0716193727BE102096FC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3629885D409F1EDD9F5F03C5 /* ContentView.swift */; };
+		AEBAB7AA1FBC526514F1ED02 /* GraphQLQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = E34FCF7485814D4312D838D5 /* GraphQLQueries.swift */; };
+		BB30E80396C4A6F0E006194C /* LeetReviewApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CFFEE765BFC60FC1F909395 /* LeetReviewApp.swift */; };
+		C52A12B41354A12B386E4B5E /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F548ECB3EDD422B43D5EA35 /* Theme.swift */; };
+		C75E41C8333689D339A2F62E /* Color+Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2885203532B62F05D069E3A /* Color+Theme.swift */; };
+		CC0476816B11CE48E24B1FFA /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = BC29B4521F9F153944EC7F4E /* KeychainAccess */; };
+		CC9A1C58FBED1C6D25A164EE /* LoginWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BABBFBA155BA87A89648F6E /* LoginWebView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		1F0069EE9C3CE69280CF81BB /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		2BABBFBA155BA87A89648F6E /* LoginWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginWebView.swift; sourceTree = "<group>"; };
+		3629885D409F1EDD9F5F03C5 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		4CFFEE765BFC60FC1F909395 /* LeetReviewApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeetReviewApp.swift; sourceTree = "<group>"; };
+		4D32E23CC7D08150130C2057 /* LeetCodeAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeetCodeAPI.swift; sourceTree = "<group>"; };
+		5F548ECB3EDD422B43D5EA35 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		9D6FE5482B070FAC52A8EA6D /* LeetReview.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = LeetReview.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E2885203532B62F05D069E3A /* Color+Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Theme.swift"; sourceTree = "<group>"; };
+		E34FCF7485814D4312D838D5 /* GraphQLQueries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphQLQueries.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8A7159D2F48DAC9BFEF8D7ED /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CC0476816B11CE48E24B1FFA /* KeychainAccess in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		3C28D9F243E625CA72B6A03D /* App */ = {
+			isa = PBXGroup;
+			children = (
+				3629885D409F1EDD9F5F03C5 /* ContentView.swift */,
+				4CFFEE765BFC60FC1F909395 /* LeetReviewApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		458E608DBA378270A58C1C39 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				E2885203532B62F05D069E3A /* Color+Theme.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		576A73D4F1FF42E639AAEC03 /* LeetReview */ = {
+			isa = PBXGroup;
+			children = (
+				3C28D9F243E625CA72B6A03D /* App */,
+				BD0B3BD3A9CEEB8090BC8B8C /* Core */,
+				5D8F26A88AEB35AE8A7EAB68 /* Shared */,
+			);
+			path = LeetReview;
+			sourceTree = "<group>";
+		};
+		5D8F26A88AEB35AE8A7EAB68 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				458E608DBA378270A58C1C39 /* Extensions */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		A0FB9A4833EA10D3C1766054 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				E34FCF7485814D4312D838D5 /* GraphQLQueries.swift */,
+				4D32E23CC7D08150130C2057 /* LeetCodeAPI.swift */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+		AC61844E3702691836C19443 /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				5F548ECB3EDD422B43D5EA35 /* Theme.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		B6463F92AC732AABEA0F1A68 = {
+			isa = PBXGroup;
+			children = (
+				576A73D4F1FF42E639AAEC03 /* LeetReview */,
+				DB1A1C0E1631301BC4618E5C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BD0B3BD3A9CEEB8090BC8B8C /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				C376C5758B5C08EA85D3B968 /* Auth */,
+				A0FB9A4833EA10D3C1766054 /* Network */,
+				AC61844E3702691836C19443 /* Theme */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		C376C5758B5C08EA85D3B968 /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				1F0069EE9C3CE69280CF81BB /* AuthManager.swift */,
+				2BABBFBA155BA87A89648F6E /* LoginWebView.swift */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		DB1A1C0E1631301BC4618E5C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9D6FE5482B070FAC52A8EA6D /* LeetReview.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		"TEMP_38D20F12-9C33-41E4-BAC8-A2C9453673B2" /* Features */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BD9C121A89A4F51A772CB722 /* LeetReview */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BFA4A59D4B8E43AD996B4DF8 /* Build configuration list for PBXNativeTarget "LeetReview" */;
+			buildPhases = (
+				AB111EF3F11B7D7B0B7743D4 /* Sources */,
+				8A7159D2F48DAC9BFEF8D7ED /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LeetReview;
+			packageProductDependencies = (
+				BC29B4521F9F153944EC7F4E /* KeychainAccess */,
+			);
+			productName = LeetReview;
+			productReference = 9D6FE5482B070FAC52A8EA6D /* LeetReview.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		07FCA19CC68C687025848811 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = B402EEE32A7EF6E45FCC83E8 /* Build configuration list for PBXProject "LeetReview" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = B6463F92AC732AABEA0F1A68;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A6AAFC1AB0C62AD1D5878F9A /* XCRemoteSwiftPackageReference "KeychainAccess" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = DB1A1C0E1631301BC4618E5C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BD9C121A89A4F51A772CB722 /* LeetReview */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AB111EF3F11B7D7B0B7743D4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				778FE424BDFDB0559237B352 /* AuthManager.swift in Sources */,
+				C75E41C8333689D339A2F62E /* Color+Theme.swift in Sources */,
+				8BBC0716193727BE102096FC /* ContentView.swift in Sources */,
+				AEBAB7AA1FBC526514F1ED02 /* GraphQLQueries.swift in Sources */,
+				527CA9B025E55167A416B9E6 /* LeetCodeAPI.swift in Sources */,
+				BB30E80396C4A6F0E006194C /* LeetReviewApp.swift in Sources */,
+				CC9A1C58FBED1C6D25A164EE /* LoginWebView.swift in Sources */,
+				C52A12B41354A12B386E4B5E /* Theme.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		6E769928649D76101E838C33 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_KEY_CFBundleDisplayName = LeetReview;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.leetreview.app;
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BDBB5339B801AC5B1AA6217A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6;
+			};
+			name = Release;
+		};
+		C6EC4739A941E49FD0A383DF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_KEY_CFBundleDisplayName = LeetReview;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.leetreview.app;
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		D609327794E0F3264D2F7253 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B402EEE32A7EF6E45FCC83E8 /* Build configuration list for PBXProject "LeetReview" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D609327794E0F3264D2F7253 /* Debug */,
+				BDBB5339B801AC5B1AA6217A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		BFA4A59D4B8E43AD996B4DF8 /* Build configuration list for PBXNativeTarget "LeetReview" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6E769928649D76101E838C33 /* Debug */,
+				C6EC4739A941E49FD0A383DF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A6AAFC1AB0C62AD1D5878F9A /* XCRemoteSwiftPackageReference "KeychainAccess" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kishikawakatsumi/KeychainAccess";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.2.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BC29B4521F9F153944EC7F4E /* KeychainAccess */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A6AAFC1AB0C62AD1D5878F9A /* XCRemoteSwiftPackageReference "KeychainAccess" */;
+			productName = KeychainAccess;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 07FCA19CC68C687025848811 /* Project object */;
+}
