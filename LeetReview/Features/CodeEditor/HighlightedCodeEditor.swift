@@ -191,6 +191,57 @@ struct HighlightedCodeEditor: UIViewRepresentable {
             }
         }
 
+        // MARK: - Smart Indentation
+
+        private let bracketPairs: [String: String] = [
+            "(": ")", "{": "}", "[": "]"
+        ]
+
+        func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+            let nsText = (textView.text ?? "") as NSString
+
+            // Auto-close brackets
+            if let closing = bracketPairs[text] {
+                textView.insertText(text + closing)
+                if let pos = textView.position(from: textView.beginningOfDocument, offset: range.location + 1) {
+                    textView.selectedTextRange = textView.textRange(from: pos, to: pos)
+                }
+                return false
+            }
+
+            // Smart Enter
+            guard text == "\n" else { return true }
+
+            let cursorPosition = range.location
+            let lineRange = nsText.lineRange(for: NSRange(location: cursorPosition, length: 0))
+            let currentLine = nsText.substring(with: lineRange)
+            let leadingWhitespace = String(currentLine.prefix(while: { $0 == " " || $0 == "\t" }))
+            let trimmedLine = currentLine.trimmingCharacters(in: .whitespacesAndNewlines)
+            let indent = "    "
+            var newIndent = leadingWhitespace
+
+            let shouldDeepen = trimmedLine.hasSuffix(":") || trimmedLine.hasSuffix("{") ||
+                               trimmedLine.hasSuffix("(") || trimmedLine.hasSuffix("[")
+
+            if shouldDeepen {
+                newIndent += indent
+                // If next char is a closing bracket, add it on a new line
+                if cursorPosition < nsText.length {
+                    let nextChar = nsText.substring(with: NSRange(location: cursorPosition, length: 1))
+                    if nextChar == "}" || nextChar == "]" || nextChar == ")" {
+                        textView.insertText("\n" + newIndent + "\n" + leadingWhitespace)
+                        if let pos = textView.position(from: textView.beginningOfDocument, offset: cursorPosition + 1 + newIndent.count) {
+                            textView.selectedTextRange = textView.textRange(from: pos, to: pos)
+                        }
+                        return false
+                    }
+                }
+            }
+
+            textView.insertText("\n" + newIndent)
+            return false
+        }
+
         // MARK: - Syntax Highlighting
 
         func applyHighlighting(to textView: UITextView, language: String) {

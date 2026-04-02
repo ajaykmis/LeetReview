@@ -116,6 +116,10 @@ final class CodeEditorViewModel {
 
     func loadPreviousSubmission() async {
         guard !isLoadingPrevious else { return }
+        guard AuthManager.hasSessionCredentials() else {
+            inlineMessage = "Sign in with LeetCode to load previous submissions."
+            return
+        }
         isLoadingPrevious = true
 
         do {
@@ -150,6 +154,10 @@ final class CodeEditorViewModel {
 
     func runCode() async {
         guard !isRunning else { return }
+        guard AuthManager.hasSessionCredentials() else {
+            inlineMessage = "Sign in with LeetCode to run code."
+            return
+        }
 
         isRunning = true
         inlineMessage = nil
@@ -173,6 +181,10 @@ final class CodeEditorViewModel {
 
     func submitCode() async {
         guard !isSubmitting else { return }
+        guard AuthManager.hasSessionCredentials() else {
+            inlineMessage = "Sign in with LeetCode to submit code."
+            return
+        }
 
         isSubmitting = true
         inlineMessage = nil
