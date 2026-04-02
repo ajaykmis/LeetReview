@@ -4,8 +4,10 @@ import SwiftUI
 struct ProblemDetailView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(ThemeManager.self) private var themeManager
+    @Environment(\.modelContext) private var modelContext
     @State private var viewModel: ProblemDetailViewModel
     @State private var problemHTMLHeight: CGFloat = 320
+    @State private var editorialHTMLHeight: CGFloat = 320
 
     init(titleSlug: String, title: String) {
         _viewModel = State(wrappedValue: ProblemDetailViewModel(
@@ -32,6 +34,7 @@ struct ProblemDetailView: View {
         .toolbarBackground(Theme.Colors.background, for: .navigationBar)
         .toolbarColorScheme(themeManager.toolbarColorScheme, for: .navigationBar)
         .task {
+            viewModel.configureReview(modelContext: modelContext)
             await viewModel.loadAll()
         }
     }
@@ -99,6 +102,30 @@ struct ProblemDetailView: View {
                 }
                 .buttonStyle(.plain)
             }
+
+            // Add to Review button
+            Button {
+                viewModel.addToReview()
+            } label: {
+                HStack(spacing: Theme.Spacing.sm) {
+                    Image(systemName: viewModel.addedToReview
+                        ? "checkmark.circle.fill"
+                        : "arrow.counterclockwise.circle")
+                    Text(viewModel.addedToReview ? "In Review Queue" : "Add to Review")
+                        .font(.subheadline.bold())
+                }
+                .foregroundStyle(viewModel.addedToReview ? Theme.Colors.easy : Theme.Colors.text)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, Theme.Spacing.sm)
+                .background(
+                    viewModel.addedToReview
+                        ? Theme.Colors.easy.opacity(0.12)
+                        : Theme.Colors.background.opacity(0.7)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .disabled(viewModel.addedToReview)
+            .buttonStyle(.plain)
         }
         .padding(Theme.Spacing.lg)
         .background(Theme.Colors.card)
@@ -256,21 +283,43 @@ struct ProblemDetailView: View {
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
     }
 
+    @ViewBuilder
     private var hintsSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             sectionTitle("Hints")
-            ForEach(Array(viewModel.generatedHints.enumerated()), id: \.offset) { index, hint in
-                HStack(alignment: .top, spacing: Theme.Spacing.md) {
-                    Text("\(index + 1)")
-                        .font(.caption.bold())
-                        .foregroundStyle(Theme.Colors.background)
-                        .frame(width: 22, height: 22)
-                        .background(Theme.Colors.medium)
-                        .clipShape(Circle())
 
-                    Text(hint)
-                        .font(.subheadline)
-                        .foregroundStyle(Theme.Colors.textSecondary)
+            if viewModel.isLoadingHints && viewModel.hints.isEmpty {
+                HStack {
+                    Spacer()
+                    ProgressView().tint(Theme.Colors.accent)
+                    Spacer()
+                }
+                .padding(.vertical, Theme.Spacing.lg)
+            } else if viewModel.hints.isEmpty {
+                Text("No hints available for this problem.")
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.Colors.textSecondary)
+            } else {
+                ForEach(Array(viewModel.hints.enumerated()), id: \.offset) { index, hint in
+                    DisclosureGroup {
+                        Text(hint.strippingHTMLTags())
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.Colors.textSecondary)
+                            .padding(.top, Theme.Spacing.xs)
+                    } label: {
+                        HStack(spacing: Theme.Spacing.sm) {
+                            Text("\(index + 1)")
+                                .font(.caption.bold())
+                                .foregroundStyle(Theme.Colors.background)
+                                .frame(width: 22, height: 22)
+                                .background(Theme.Colors.medium)
+                                .clipShape(Circle())
+                            Text("Hint \(index + 1)")
+                                .font(.subheadline.bold())
+                                .foregroundStyle(Theme.Colors.text)
+                        }
+                    }
+                    .tint(Theme.Colors.accent)
                 }
             }
         }
@@ -279,22 +328,50 @@ struct ProblemDetailView: View {
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
     }
 
+    @ViewBuilder
     private var editorialSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             sectionTitle("Editorial")
 
-            Text(viewModel.editorialSummary)
-                .font(.subheadline)
-                .foregroundStyle(Theme.Colors.textSecondary)
-
-            ForEach(viewModel.editorialChecklist, id: \.self) { item in
-                HStack(alignment: .top, spacing: Theme.Spacing.sm) {
-                    Image(systemName: "checkmark.seal.fill")
-                        .foregroundStyle(Theme.Colors.accent)
-                    Text(item)
-                        .font(.subheadline)
-                        .foregroundStyle(Theme.Colors.text)
+            if viewModel.isLoadingEditorial {
+                HStack {
+                    Spacer()
+                    ProgressView().tint(Theme.Colors.accent)
+                    Spacer()
                 }
+                .padding(.vertical, Theme.Spacing.lg)
+            } else if let solution = viewModel.editorialSolution {
+                if solution.paidOnly == true && solution.canSeeDetail != true {
+                    VStack(spacing: Theme.Spacing.md) {
+                        Image(systemName: "lock.fill")
+                            .font(.title2)
+                            .foregroundStyle(Theme.Colors.medium)
+                        Text("This editorial requires a LeetCode Premium subscription.")
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.Colors.textSecondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.vertical, Theme.Spacing.md)
+                } else if let content = solution.content, !content.isEmpty {
+                    ProblemHTMLView(
+                        htmlContent: content,
+                        colorScheme: themeManager.preferredColorScheme,
+                        contentHeight: $editorialHTMLHeight
+                    )
+                    .frame(height: max(editorialHTMLHeight, 200))
+                } else {
+                    Text("Editorial content is empty.")
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.Colors.textSecondary)
+                }
+            } else if let error = viewModel.editorialError {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(Theme.Colors.hard)
+            } else {
+                Text("No editorial available for this problem.")
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.Colors.textSecondary)
             }
 
             NavigationLink {
@@ -316,23 +393,83 @@ struct ProblemDetailView: View {
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
     }
 
+    @ViewBuilder
     private var communitySection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-            sectionTitle("Community")
-
-            ForEach(viewModel.communityHighlights) { item in
-                VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                    Text(item.title)
-                        .font(.subheadline.bold())
-                        .foregroundStyle(Theme.Colors.text)
-                    Text(item.body)
-                        .font(.subheadline)
+            HStack {
+                sectionTitle("Community")
+                Spacer()
+                if viewModel.communityTotal > 0 {
+                    Text("\(viewModel.communityTotal) solutions")
+                        .font(.caption)
                         .foregroundStyle(Theme.Colors.textSecondary)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(Theme.Spacing.md)
-                .background(Theme.Colors.background.opacity(0.7))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+
+            if viewModel.isLoadingCommunity && viewModel.communitySolutions.isEmpty {
+                HStack {
+                    Spacer()
+                    ProgressView().tint(Theme.Colors.accent)
+                    Spacer()
+                }
+                .padding(.vertical, Theme.Spacing.lg)
+            } else if let error = viewModel.communityError {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(Theme.Colors.hard)
+            } else if viewModel.communitySolutions.isEmpty {
+                Text("No community solutions found.")
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.Colors.textSecondary)
+            } else {
+                ForEach(viewModel.communitySolutions) { solution in
+                    VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                        Text(solution.title)
+                            .font(.subheadline.bold())
+                            .foregroundStyle(Theme.Colors.text)
+                            .lineLimit(2)
+
+                        HStack(spacing: Theme.Spacing.md) {
+                            if let votes = solution.post.voteCount {
+                                Label("\(votes)", systemImage: "arrow.up")
+                                    .font(.caption)
+                                    .foregroundStyle(votes > 0 ? Theme.Colors.easy : Theme.Colors.textSecondary)
+                            }
+
+                            if let views = solution.viewCount {
+                                Label(formatCount(views), systemImage: "eye")
+                                    .font(.caption)
+                                    .foregroundStyle(Theme.Colors.textSecondary)
+                            }
+
+                            if let author = solution.post.author {
+                                Text(author.username)
+                                    .font(.caption)
+                                    .foregroundStyle(Theme.Colors.accent)
+                            }
+
+                            Spacer()
+                        }
+
+                        if !solution.solutionTags.isEmpty {
+                            HStack(spacing: Theme.Spacing.xs) {
+                                ForEach(solution.solutionTags.prefix(3), id: \.name) { tag in
+                                    Text(tag.name)
+                                        .font(.caption2)
+                                        .foregroundStyle(Theme.Colors.accent)
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(Theme.Colors.accent.opacity(0.1))
+                                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                                }
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(Theme.Spacing.md)
+                    .background(Theme.Colors.background.opacity(0.7))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
             }
 
             NavigationLink {
@@ -354,23 +491,58 @@ struct ProblemDetailView: View {
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
     }
 
+    @ViewBuilder
     private var similarSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             sectionTitle("Similar Questions")
 
-            ForEach(viewModel.similarQuestionShell) { item in
-                VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                    Text(item.title)
-                        .font(.subheadline.bold())
-                        .foregroundStyle(Theme.Colors.text)
-                    Text(item.subtitle)
-                        .font(.subheadline)
-                        .foregroundStyle(Theme.Colors.textSecondary)
+            if viewModel.isLoadingSimilar && viewModel.similarQuestions.isEmpty {
+                HStack {
+                    Spacer()
+                    ProgressView().tint(Theme.Colors.accent)
+                    Spacer()
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(Theme.Spacing.md)
-                .background(Theme.Colors.background.opacity(0.7))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .padding(.vertical, Theme.Spacing.lg)
+            } else if let error = viewModel.similarError {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(Theme.Colors.hard)
+            } else if viewModel.similarQuestions.isEmpty {
+                Text("No similar questions found.")
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.Colors.textSecondary)
+            } else {
+                ForEach(viewModel.similarQuestions) { question in
+                    NavigationLink {
+                        ProblemDetailView(
+                            titleSlug: question.titleSlug,
+                            title: question.title
+                        )
+                    } label: {
+                        HStack(spacing: Theme.Spacing.md) {
+                            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                                Text(question.title)
+                                    .font(.subheadline.bold())
+                                    .foregroundStyle(Theme.Colors.text)
+                                    .lineLimit(1)
+                            }
+                            Spacer()
+                            DifficultyBadge(difficulty: question.difficulty)
+                            if question.isPaidOnly == true {
+                                Image(systemName: "lock.fill")
+                                    .font(.caption2)
+                                    .foregroundStyle(Theme.Colors.medium)
+                            }
+                            Image(systemName: "chevron.right")
+                                .font(.caption2)
+                                .foregroundStyle(Theme.Colors.textSecondary)
+                        }
+                        .padding(Theme.Spacing.md)
+                        .background(Theme.Colors.background.opacity(0.7))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
         .padding(Theme.Spacing.lg)
@@ -424,6 +596,15 @@ struct ProblemDetailView: View {
         .padding(Theme.Spacing.md)
         .background(Theme.Colors.background.opacity(0.7))
         .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func formatCount(_ count: Int) -> String {
+        if count >= 1_000_000 {
+            return String(format: "%.1fM", Double(count) / 1_000_000)
+        } else if count >= 1_000 {
+            return String(format: "%.1fK", Double(count) / 1_000)
+        }
+        return "\(count)"
     }
 
     private func editorEntryRow(title: String, subtitle: String, tint: Color) -> some View {
@@ -766,6 +947,14 @@ struct ProblemHTMLView: UIViewRepresentable {
                 }
             }
         }
+    }
+}
+
+extension String {
+    func strippingHTMLTags() -> String {
+        replacingOccurrences(of: "<[^>]+>", with: " ", options: .regularExpression)
+            .replacingOccurrences(of: "&nbsp;", with: " ")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
 

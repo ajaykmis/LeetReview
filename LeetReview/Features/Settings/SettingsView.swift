@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(ThemeManager.self) private var themeManager
+    @Environment(StoreManager.self) private var storeManager
     @State private var showingLogoutConfirmation = false
     @State private var showingClearCacheConfirmation = false
     @State private var cacheCleared = false
@@ -14,6 +15,7 @@ struct SettingsView: View {
 
                 List {
                     appearanceSection
+                    purchaseSection
                     dataSection
                     accountSection
                     aboutSection
@@ -50,6 +52,76 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - Purchase
+
+    private var purchaseSection: some View {
+        Section {
+            if storeManager.isPurchased {
+                Label {
+                    HStack {
+                        Text("Ads Removed")
+                            .foregroundStyle(Theme.Colors.text)
+                        Spacer()
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(Theme.Colors.easy)
+                    }
+                } icon: {
+                    Image(systemName: "star.fill")
+                        .foregroundStyle(Theme.Colors.medium)
+                }
+                .listRowBackground(Theme.Colors.card)
+            } else {
+                Button {
+                    Task { await storeManager.purchaseRemoveAds() }
+                } label: {
+                    Label {
+                        HStack {
+                            Text("Remove Ads")
+                                .foregroundStyle(Theme.Colors.text)
+                            Spacer()
+                            if storeManager.isLoading {
+                                ProgressView()
+                                    .tint(Theme.Colors.accent)
+                            } else {
+                                Text(storeManager.priceString)
+                                    .font(.subheadline.bold())
+                                    .foregroundStyle(Theme.Colors.accent)
+                            }
+                        }
+                    } icon: {
+                        Image(systemName: "star.fill")
+                            .foregroundStyle(Theme.Colors.medium)
+                    }
+                }
+                .disabled(storeManager.isLoading)
+                .listRowBackground(Theme.Colors.card)
+
+                Button {
+                    Task { await storeManager.restorePurchases() }
+                } label: {
+                    Label {
+                        Text("Restore Purchases")
+                            .foregroundStyle(Theme.Colors.text)
+                    } icon: {
+                        Image(systemName: "arrow.clockwise")
+                            .foregroundStyle(Theme.Colors.accent)
+                    }
+                }
+                .listRowBackground(Theme.Colors.card)
+            }
+
+            if let error = storeManager.errorMessage {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(Theme.Colors.hard)
+                    .listRowBackground(Theme.Colors.card)
+            }
+        } header: {
+            Text("Premium")
+                .foregroundStyle(Theme.Colors.textSecondary)
+        }
+    }
+
     // MARK: - Data
 
     private var dataSection: some View {
@@ -66,6 +138,10 @@ struct SettingsView: View {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundStyle(Theme.Colors.easy)
                                 .transition(.scale.combined(with: .opacity))
+                        } else {
+                            Text(CacheManager.shared.cacheSizeString())
+                                .font(.subheadline)
+                                .foregroundStyle(Theme.Colors.textSecondary)
                         }
                     }
                 } icon: {

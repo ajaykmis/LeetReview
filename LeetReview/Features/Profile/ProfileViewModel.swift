@@ -6,8 +6,26 @@ import Observation
 final class ProfileViewModel {
     private(set) var profile: UserProfile?
     private(set) var recentSubmissions: [RecentSubmission] = []
+    private(set) var contestRanking: ContestRankingInfo?
     private(set) var isLoading = false
     private(set) var errorMessage: String?
+
+    var avatarURL: URL? {
+        guard let urlString = profile?.profile.userAvatar, !urlString.isEmpty else { return nil }
+        return URL(string: urlString)
+    }
+
+    var realName: String? {
+        profile?.profile.realName?.isEmpty == false ? profile?.profile.realName : nil
+    }
+
+    var company: String? {
+        profile?.profile.company?.isEmpty == false ? profile?.profile.company : nil
+    }
+
+    var school: String? {
+        profile?.profile.school?.isEmpty == false ? profile?.profile.school : nil
+    }
 
     var totalSolved: Int {
         guard let stats = profile?.submitStats.acSubmissionNum else { return 0 }
@@ -112,10 +130,12 @@ final class ProfileViewModel {
         do {
             async let profileResult = LeetCodeAPI.shared.fetchUserProfile(username: username)
             async let submissionsResult = LeetCodeAPI.shared.fetchRecentSubmissions(username: username, limit: 15)
+            async let contestResult = LeetCodeAPI.shared.fetchContestRanking(username: username)
 
-            let (fetchedProfile, fetchedSubmissions) = try await (profileResult, submissionsResult)
+            let (fetchedProfile, fetchedSubmissions, fetchedContest) = try await (profileResult, submissionsResult, contestResult)
             profile = fetchedProfile
             recentSubmissions = fetchedSubmissions
+            contestRanking = fetchedContest
         } catch {
             errorMessage = error.localizedDescription
         }

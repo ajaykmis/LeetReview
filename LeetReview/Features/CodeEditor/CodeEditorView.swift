@@ -142,6 +142,17 @@ private struct EditorToolbar: View {
                     viewModel.resetCurrentDraft()
                 }
 
+                ActionButton(
+                    title: viewModel.isLoadingPrevious ? "Loading..." : "Previous",
+                    systemImage: "clock.arrow.circlepath",
+                    tint: Theme.Colors.textSecondary,
+                    isEnabled: !viewModel.isLoadingPrevious
+                ) {
+                    Task {
+                        await viewModel.loadPreviousSubmission()
+                    }
+                }
+
                 Spacer()
             }
         }
@@ -153,7 +164,7 @@ private struct EditorToolbar: View {
 
 private struct EditableCodeCard: View {
     @Bindable var viewModel: CodeEditorViewModel
-    @FocusState private var isFocused: Bool
+    @State private var isFocused = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
@@ -163,9 +174,17 @@ private struct EditableCodeCard: View {
                         .font(.headline)
                         .foregroundStyle(Theme.Colors.text)
 
-                    Text("Drafts are kept per language inside this screen.")
-                        .font(.caption)
-                        .foregroundStyle(Theme.Colors.textSecondary)
+                    HStack(spacing: Theme.Spacing.xs) {
+                        Text(viewModel.selectedLanguage?.languageName ?? "")
+                            .font(.caption.bold())
+                            .foregroundStyle(Theme.Colors.accent)
+                        Text("·")
+                            .font(.caption)
+                            .foregroundStyle(Theme.Colors.textSecondary)
+                        Text("Drafts kept per language")
+                            .font(.caption)
+                            .foregroundStyle(Theme.Colors.textSecondary)
+                    }
                 }
 
                 Spacer()
@@ -180,22 +199,22 @@ private struct EditableCodeCard: View {
                 }
             }
 
-            TextEditor(text: $viewModel.code)
-                .font(.system(.body, design: .monospaced))
-                .scrollContentBackground(.hidden)
-                .foregroundStyle(Theme.Colors.text)
-                .padding(Theme.Spacing.md)
-                .frame(minHeight: 280)
-                .background(Theme.Colors.background)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(
-                            isFocused ? Theme.Colors.accent : Theme.Colors.textSecondary.opacity(0.15),
-                            lineWidth: 1
-                        )
-                )
-                .focused($isFocused)
+            HighlightedCodeEditor(
+                code: $viewModel.code,
+                languageSlug: viewModel.selectedLanguageSlug,
+                onFocusChange: { focused in
+                    isFocused = focused
+                }
+            )
+            .frame(minHeight: 320)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(
+                        isFocused ? Theme.Colors.accent : Theme.Colors.textSecondary.opacity(0.15),
+                        lineWidth: 1
+                    )
+            )
         }
         .padding(Theme.Spacing.lg)
         .background(Theme.Colors.card)

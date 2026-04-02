@@ -18,12 +18,14 @@ struct LeetReviewApp: App {
     @State private var authManager = AuthManager()
     @State private var themeManager = ThemeManager()
     @State private var reviewViewModel = ReviewViewModel()
+    @State private var storeManager = StoreManager()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environment(authManager)
                 .environment(themeManager)
+                .environment(storeManager)
                 .preferredColorScheme(themeManager.preferredColorScheme)
                 .onOpenURL { url in
                     handleURLScheme(url)

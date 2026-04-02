@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import SwiftData
 
 @Observable
 @MainActor
@@ -24,6 +25,8 @@ final class ProblemDetailViewModel {
         }
     }
 
+    // MARK: - Core state
+
     private(set) var detail: ProblemDetail?
     private(set) var submissions: [Submission] = []
     private(set) var isLoadingDetail = false
@@ -31,23 +34,94 @@ final class ProblemDetailViewModel {
     private(set) var detailError: String?
     private(set) var submissionsError: String?
 
-    var selectedSection: DetailSection = .description
+    // MARK: - Tab section data (real API)
+
+    private(set) var hints: [String] = []
+    private(set) var isLoadingHints = false
+
+    private(set) var editorialSolution: OfficialSolution?
+    private(set) var isLoadingEditorial = false
+    private(set) var editorialError: String?
+
+    private(set) var communitySolutions: [CommunitySolution] = []
+    private(set) var communityTotal: Int = 0
+    private(set) var isLoadingCommunity = false
+    private(set) var communityError: String?
+
+    private(set) var similarQuestions: [SimilarQuestion] = []
+    private(set) var isLoadingSimilar = false
+    private(set) var similarError: String?
+
+    // MARK: - Review integration
+
+    private(set) var addedToReview = false
+    private var reviewStore: ReviewStore?
+
+    // MARK: - Section selection
+
+    var selectedSection: DetailSection = .description {
+        didSet {
+            if oldValue != selectedSection {
+                Task { await loadSectionIfNeeded(selectedSection) }
+            }
+        }
+    }
 
     let titleSlug: String
     let title: String
+
+    // Track which sections have been loaded
+    private var loadedSections: Set<DetailSection> = []
 
     init(titleSlug: String, title: String) {
         self.titleSlug = titleSlug
         self.title = title
     }
 
+    func configureReview(modelContext: ModelContext) {
+        self.reviewStore = ReviewStore(modelContext: modelContext)
+        checkReviewStatus()
+    }
+
+    // MARK: - Loading
+
     func loadDetail() async {
         guard detail == nil, !isLoadingDetail else { return }
         isLoadingDetail = true
         detailError = nil
 
+        // Check cache first
+        let cacheKey = CacheManager.problemDetailKey(titleSlug)
+        if let cached = CacheManager.shared.get(key: cacheKey, as: ProblemDetail.self) {
+            detail = cached
+            if let inlineHints = cached.hints, !inlineHints.isEmpty {
+                hints = inlineHints
+                loadedSections.insert(.hints)
+            }
+            isLoadingDetail = false
+            // Refresh in background
+            Task {
+                if let fresh = try? await LeetCodeAPI.shared.fetchProblemDetail(titleSlug: titleSlug) {
+                    detail = fresh
+                    CacheManager.shared.cache(key: cacheKey, value: fresh)
+                    if let inlineHints = fresh.hints, !inlineHints.isEmpty {
+                        hints = inlineHints
+                        loadedSections.insert(.hints)
+                    }
+                }
+            }
+            return
+        }
+
         do {
-            detail = try await LeetCodeAPI.shared.fetchProblemDetail(titleSlug: titleSlug)
+            let fetchedDetail = try await LeetCodeAPI.shared.fetchProblemDetail(titleSlug: titleSlug)
+            detail = fetchedDetail
+            CacheManager.shared.cache(key: cacheKey, value: fetchedDetail)
+            // Hints come inline with the detail response
+            if let inlineHints = fetchedDetail.hints, !inlineHints.isEmpty {
+                hints = inlineHints
+                loadedSections.insert(.hints)
+            }
         } catch {
             detailError = error.localizedDescription
         }
@@ -74,6 +148,100 @@ final class ProblemDetailViewModel {
         async let submissionsTask: () = loadSubmissions()
         _ = await (detailTask, submissionsTask)
     }
+
+    // MARK: - Lazy section loading
+
+    func loadSectionIfNeeded(_ section: DetailSection) async {
+        guard !loadedSections.contains(section) else { return }
+        switch section {
+        case .description:
+            break // loaded with detail
+        case .hints:
+            await loadHints()
+        case .editorial:
+            await loadEditorial()
+        case .community:
+            await loadCommunitySolutions()
+        case .similar:
+            await loadSimilarQuestions()
+        }
+    }
+
+    private func loadHints() async {
+        guard hints.isEmpty, !isLoadingHints else { return }
+        isLoadingHints = true
+        do {
+            hints = try await LeetCodeAPI.shared.fetchQuestionHints(titleSlug: titleSlug)
+            loadedSections.insert(.hints)
+        } catch {
+            // Hints are optional — fail silently
+        }
+        isLoadingHints = false
+    }
+
+    private func loadEditorial() async {
+        guard editorialSolution == nil, !isLoadingEditorial else { return }
+        isLoadingEditorial = true
+        editorialError = nil
+        do {
+            editorialSolution = try await LeetCodeAPI.shared.fetchOfficialSolution(titleSlug: titleSlug)
+            loadedSections.insert(.editorial)
+        } catch {
+            editorialError = error.localizedDescription
+        }
+        isLoadingEditorial = false
+    }
+
+    private func loadCommunitySolutions() async {
+        guard communitySolutions.isEmpty, !isLoadingCommunity else { return }
+        isLoadingCommunity = true
+        communityError = nil
+        do {
+            let result = try await LeetCodeAPI.shared.fetchCommunitySolutions(
+                questionSlug: titleSlug,
+                first: 10,
+                orderBy: "most_votes"
+            )
+            communitySolutions = result.solutions
+            communityTotal = result.totalNum
+            loadedSections.insert(.community)
+        } catch {
+            communityError = error.localizedDescription
+        }
+        isLoadingCommunity = false
+    }
+
+    private func loadSimilarQuestions() async {
+        guard similarQuestions.isEmpty, !isLoadingSimilar else { return }
+        isLoadingSimilar = true
+        similarError = nil
+        do {
+            similarQuestions = try await LeetCodeAPI.shared.fetchSimilarQuestions(titleSlug: titleSlug)
+            loadedSections.insert(.similar)
+        } catch {
+            similarError = error.localizedDescription
+        }
+        isLoadingSimilar = false
+    }
+
+    // MARK: - Review
+
+    func addToReview() {
+        guard let detail, let store = reviewStore else { return }
+        store.addProblem(
+            titleSlug: titleSlug,
+            title: detail.title ?? title,
+            difficulty: detail.difficulty
+        )
+        addedToReview = true
+    }
+
+    private func checkReviewStatus() {
+        guard let store = reviewStore else { return }
+        addedToReview = store.findItem(bySlug: titleSlug) != nil
+    }
+
+    // MARK: - Computed helpers
 
     var acceptanceRate: String? {
         guard let statsJSON = detail?.stats,
@@ -118,91 +286,6 @@ final class ProblemDetailViewModel {
         return "\(difficulty) problem centered on \(tags). Start by identifying the state you need to preserve before writing code."
     }
 
-    var generatedHints: [String] {
-        var hints = [
-            "Rephrase the problem in terms of what changes from one state to the next.",
-            "Use the topic tags to narrow the solution family before choosing an implementation."
-        ]
-
-        if let difficulty = detail?.difficulty {
-            switch difficulty.lowercased() {
-            case "easy":
-                hints.append("Aim for the simplest correct pass first, then trim extra work if needed.")
-            case "medium":
-                hints.append("Check whether a hash map, stack, or two-pointer invariant removes nested loops.")
-            case "hard":
-                hints.append("Focus on the invariant or recurrence before touching edge cases.")
-            default:
-                break
-            }
-        }
-
-        if let firstTag = detail?.topicTags.first?.name {
-            hints.append("If \(firstTag.lowercased()) is the dominant pattern, sketch a small example and track that structure by hand.")
-        }
-
-        return Array(hints.prefix(4))
-    }
-
-    var editorialSummary: String {
-        let acceptance = acceptanceRate ?? "n/a"
-        return "Editorial content is not wired yet, but this shell mirrors the Flutter structure. Current signal: \(acceptance) acceptance, \(detail?.difficulty ?? "unknown") difficulty, and \(submissions.count) local submission(s)."
-    }
-
-    var editorialChecklist: [String] {
-        [
-            "Identify the core pattern from the topic tags before writing code.",
-            "Define the input-output invariant for your main loop or recursion.",
-            "Confirm the target time complexity against the problem difficulty.",
-            "Stress-test the approach with the smallest and most repetitive edge cases."
-        ]
-    }
-
-    var communityHighlights: [ProblemDetailCommunityHighlight] {
-        let tags = detail?.topicTags.map(\.name) ?? []
-        let seedTags = Array(tags.prefix(3))
-        let fallback = ["Pattern tradeoffs", "Edge-case traps", "Complexity notes"]
-        let topics = seedTags.isEmpty ? fallback : seedTags
-
-        return topics.enumerated().map { index, topic in
-            ProblemDetailCommunityHighlight(
-                title: topic,
-                body: communityBody(for: topic, index: index)
-            )
-        }
-    }
-
-    var similarQuestionShell: [ProblemDetailSimilarQuestion] {
-        let tags = detail?.topicTags.map(\.name) ?? []
-        let seedTags = Array(tags.prefix(4))
-
-        if seedTags.isEmpty {
-            return [
-                ProblemDetailSimilarQuestion(title: "Similar questions will appear here", subtitle: "Main app hook needed: fetch similar questions by slug."),
-                ProblemDetailSimilarQuestion(title: "Topic-based practice queue", subtitle: "Use the active tags once the similar-question API is added."),
-                ProblemDetailSimilarQuestion(title: "Follow-up difficulty ladder", subtitle: "Show easy-medium-hard progressions from the same concept family.")
-            ]
-        }
-
-        return seedTags.map { tag in
-            ProblemDetailSimilarQuestion(
-                title: "\(tag) follow-up set",
-                subtitle: "Use \(tag.lowercased()) to queue adjacent problems once the network hook lands."
-            )
-        }
-    }
-
-    private func communityBody(for topic: String, index: Int) -> String {
-        switch index {
-        case 0:
-            return "Expect high-signal posts about why \(topic.lowercased()) beats the naive approach and where the common branching mistakes happen."
-        case 1:
-            return "Community solutions usually disagree on implementation style here. Capture the invariant first, then compare memory and readability tradeoffs."
-        default:
-            return "Useful discussion often clusters around \(topic.lowercased()) edge cases, especially duplicate values, empty inputs, and reset conditions."
-        }
-    }
-
     private func statValue(for key: String) -> Int? {
         guard let statsJSON = detail?.stats,
               let data = statsJSON.data(using: .utf8),
@@ -220,28 +303,5 @@ final class ProblemDetailViewModel {
             return String(format: "%.1fK", Double(value) / 1_000)
         }
         return "\(value)"
-    }
-
-}
-
-struct ProblemDetailCommunityHighlight: Identifiable {
-    let title: String
-    let body: String
-
-    var id: String { title }
-}
-
-struct ProblemDetailSimilarQuestion: Identifiable {
-    let title: String
-    let subtitle: String
-
-    var id: String { title }
-}
-
-private extension String {
-    func strippingHTMLTags() -> String {
-        replacingOccurrences(of: "<[^>]+>", with: " ", options: .regularExpression)
-            .replacingOccurrences(of: "&nbsp;", with: " ")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

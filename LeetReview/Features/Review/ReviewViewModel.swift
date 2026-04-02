@@ -26,6 +26,10 @@ final class ReviewViewModel {
 
     var hasItems: Bool { !dueItems.isEmpty }
 
+    var totalInQueue: Int {
+        reviewStore?.totalCount() ?? 0
+    }
+
     var progressText: String {
         if totalDueCount == 0 { return "No reviews" }
         return "\(reviewedCount) of \(totalDueCount) reviewed"

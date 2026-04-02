@@ -30,6 +30,8 @@
 		944D52D759BB44C86DACBEC1 /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37B600B36AE60257CEBF8267 /* DashboardViewModel.swift */; };
 		99AE7EF4901A1DCE3CAED13E /* StatCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 583F3D3A15DD58C928246F98 /* StatCard.swift */; };
 		AC21A0CC398919ED41A27BD1 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FADC627B2130CBCD344D3BD7 /* SettingsView.swift */; };
+		396685A478BB53523CB112B8 /* AdBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18F6485DB09346F638B20D76 /* AdBannerView.swift */; };
+		FE4184E69B4EAE080839BC52 /* StoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16F3233F6C02465CCFF7ED9 /* StoreManager.swift */; };
 		ACA9EA034443616E7C165387 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A755744FD2182D89108AB7DE /* GoogleService-Info.plist */; };
 		AEBAB7AA1FBC526514F1ED02 /* GraphQLQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = E34FCF7485814D4312D838D5 /* GraphQLQueries.swift */; };
 		B92F109BFC3482C1604B4D73 /* ProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A15C4CAA8E2A74889168F43D /* ProfileViewModel.swift */; };
@@ -45,14 +47,21 @@
 		DB82BF7F6C817EB1D290D770 /* CacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2257A6C50D838CD11153A12F /* CacheManager.swift */; };
 		DFDFA2000726E5D26A30F86A /* ProblemListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D5DC6FFC7C4900947B6722 /* ProblemListView.swift */; };
 		EA71EBDB6C72CCA3D67A6075 /* CodeEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FEFD22D4EE912FCBB1506BB /* CodeEditorView.swift */; };
+		63F49884439F12DFA862FE10 /* HighlightedCodeEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB51832F3874303EAFB1DACA /* HighlightedCodeEditor.swift */; };
 		F73DC9C79533AF87B5475764 /* CodeBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA146C1E1B39DEC97616F684 /* CodeBlock.swift */; };
 		F74D959ECE07FDF36DFC6CE0 /* ReviewStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1628A4B24323EE892CA00F35 /* ReviewStore.swift */; };
 		F9D657467589649241E88A0A /* ProblemDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69F26F3D1BD169DE482DF2E3 /* ProblemDetailViewModel.swift */; };
+		5C85033F2E1E22ADD0DEDDDE /* SM2AlgorithmTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA5533A53490BFAB91CF921 /* SM2AlgorithmTests.swift */; };
+		5B5F6CBD023B67AE0D9E991D /* CodeEditorModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5145E53E3C0046904706E13 /* CodeEditorModelsTests.swift */; };
+		3BFBD80857D6D7B194E3A8FF /* CacheManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F377D57B1957D2FC4F99ADDA /* CacheManagerTests.swift */; };
+		07D2E45E2B4DDD747E87E432 /* MockCodeEditorServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 229AE6EA4E81090E5403034F /* MockCodeEditorServiceTests.swift */; };
+		36FD4374D2372109943348FE /* StoreManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1246503DD8E83B5B9965B284 /* StoreManagerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0AC5DB7FC814F9E843FA0A09 /* ContestListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContestListView.swift; sourceTree = "<group>"; };
 		0FEFD22D4EE912FCBB1506BB /* CodeEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeEditorView.swift; sourceTree = "<group>"; };
+		CB51832F3874303EAFB1DACA /* HighlightedCodeEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightedCodeEditor.swift; sourceTree = "<group>"; };
 		1628A4B24323EE892CA00F35 /* ReviewStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewStore.swift; sourceTree = "<group>"; };
 		1776E9F09A8C7BA053D668F0 /* ReviewCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewCardView.swift; sourceTree = "<group>"; };
 		1BC227B233E7C80540520890 /* ReviewSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewSessionView.swift; sourceTree = "<group>"; };
@@ -89,8 +98,16 @@
 		EBBAF57197388029504419E6 /* DifficultyBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DifficultyBadge.swift; sourceTree = "<group>"; };
 		EEE22FE6ABA9E25F9303EB48 /* CodeEditorModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeEditorModels.swift; sourceTree = "<group>"; };
 		FADC627B2130CBCD344D3BD7 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		18F6485DB09346F638B20D76 /* AdBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AdBannerView.swift; path = LeetReview/Core/Store/AdBannerView.swift; sourceTree = SOURCE_ROOT; };
+		F16F3233F6C02465CCFF7ED9 /* StoreManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StoreManager.swift; path = LeetReview/Core/Store/StoreManager.swift; sourceTree = SOURCE_ROOT; };
 		FB6DB23936831C5B860458D6 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		FF3C262325764529F08CC0B5 /* ProblemListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProblemListViewModel.swift; sourceTree = "<group>"; };
+		DEA5533A53490BFAB91CF921 /* SM2AlgorithmTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SM2AlgorithmTests.swift; sourceTree = "<group>"; };
+		D5145E53E3C0046904706E13 /* CodeEditorModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeEditorModelsTests.swift; sourceTree = "<group>"; };
+		F377D57B1957D2FC4F99ADDA /* CacheManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheManagerTests.swift; sourceTree = "<group>"; };
+		229AE6EA4E81090E5403034F /* MockCodeEditorServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockCodeEditorServiceTests.swift; sourceTree = "<group>"; };
+		1246503DD8E83B5B9965B284 /* StoreManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreManagerTests.swift; sourceTree = "<group>"; };
+		99BAD7D26CF4C2FB6A505ED0 /* LeetReviewTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LeetReviewTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,6 +118,13 @@
 				CC0476816B11CE48E24B1FFA /* KeychainAccess in Frameworks */,
 				7B4E3D0C53ACD75D7A971F6A /* FirebaseAuth in Frameworks */,
 				1861BA264DCA5F5F55BFCA01 /* FirebaseMessaging in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		098C6FD0C5A631CF2D8301ED /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -124,6 +148,7 @@
 				EEE22FE6ABA9E25F9303EB48 /* CodeEditorModels.swift */,
 				2FB10B2E559234FF09B84CD7 /* CodeEditorService.swift */,
 				0FEFD22D4EE912FCBB1506BB /* CodeEditorView.swift */,
+				CB51832F3874303EAFB1DACA /* HighlightedCodeEditor.swift */,
 				E97839B1F90BA661ED82CFAF /* CodeEditorViewModel.swift */,
 			);
 			path = CodeEditor;
@@ -253,6 +278,7 @@
 		B6463F92AC732AABEA0F1A68 = {
 			isa = PBXGroup;
 			children = (
+				AF5622BE30FF3EE8E533B037 /* LeetReviewTests */,
 				576A73D4F1FF42E639AAEC03 /* LeetReview */,
 				DB1A1C0E1631301BC4618E5C /* Products */,
 			);
@@ -261,6 +287,7 @@
 		BD0B3BD3A9CEEB8090BC8B8C /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				99BAD7D26CF4C2FB6A505ED0 /* LeetReviewTests.xctest */,
 				C376C5758B5C08EA85D3B968 /* Auth */,
 				A0FB9A4833EA10D3C1766054 /* Network */,
 				4B7B985181F6615F8A800A96 /* Storage */,
@@ -313,7 +340,38 @@
 			path = Settings;
 			sourceTree = "<group>";
 		};
+
+		AF5622BE30FF3EE8E533B037 /* LeetReviewTests */ = {
+			isa = PBXGroup;
+			children = (
+				DEA5533A53490BFAB91CF921 /* SM2AlgorithmTests.swift */,
+				D5145E53E3C0046904706E13 /* CodeEditorModelsTests.swift */,
+				F377D57B1957D2FC4F99ADDA /* CacheManagerTests.swift */,
+				229AE6EA4E81090E5403034F /* MockCodeEditorServiceTests.swift */,
+				1246503DD8E83B5B9965B284 /* StoreManagerTests.swift */,
+			);
+			path = LeetReviewTests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
+
+/* Begin PBXContainerItemProxy section */
+		78CD192E5BFD5D30BA56EE1A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 07FCA19CC68C687025848811 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BD9C121A89A4F51A772CB722;
+			remoteInfo = LeetReview;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		CF9366CF4988EFF8EE19C737 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BD9C121A89A4F51A772CB722 /* LeetReview */;
+			targetProxy = 78CD192E5BFD5D30BA56EE1A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXNativeTarget section */
 		BD9C121A89A4F51A772CB722 /* LeetReview */ = {
@@ -337,6 +395,23 @@
 			productName = LeetReview;
 			productReference = 9D6FE5482B070FAC52A8EA6D /* LeetReview.app */;
 			productType = "com.apple.product-type.application";
+		};
+		C8C4838FB80DE07E5AAF2B59 /* LeetReviewTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B8EA28EDB5A21AABE095AD9E /* Build configuration list for PBXNativeTarget "LeetReviewTests" */;
+			buildPhases = (
+				0EAC81FFE6ADB3D2EB4AE102 /* Sources */,
+				098C6FD0C5A631CF2D8301ED /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CF9366CF4988EFF8EE19C737 /* PBXTargetDependency */,
+			);
+			name = LeetReviewTests;
+			productName = LeetReviewTests;
+			productReference = 99BAD7D26CF4C2FB6A505ED0 /* LeetReviewTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -371,6 +446,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+				C8C4838FB80DE07E5AAF2B59 /* LeetReviewTests */,
 				BD9C121A89A4F51A772CB722 /* LeetReview */,
 			);
 		};
@@ -400,6 +476,7 @@
 				1178A20166C90600A544701F /* CodeEditorModels.swift in Sources */,
 				18139D3FADB455AF0105F67F /* CodeEditorService.swift in Sources */,
 				EA71EBDB6C72CCA3D67A6075 /* CodeEditorView.swift in Sources */,
+				63F49884439F12DFA862FE10 /* HighlightedCodeEditor.swift in Sources */,
 				3F78895B8E91D3DB2CAD87A8 /* CodeEditorViewModel.swift in Sources */,
 				C0ED85BD0DAEE1BC3C383ED1 /* CodeViewerView.swift in Sources */,
 				C75E41C8333689D339A2F62E /* Color+Theme.swift in Sources */,
@@ -426,9 +503,23 @@
 				F74D959ECE07FDF36DFC6CE0 /* ReviewStore.swift in Sources */,
 				7EC67652FE7303508A9A5A21 /* ReviewViewModel.swift in Sources */,
 				AC21A0CC398919ED41A27BD1 /* SettingsView.swift in Sources */,
+				396685A478BB53523CB112B8 /* AdBannerView.swift in Sources */,
+				FE4184E69B4EAE080839BC52 /* StoreManager.swift in Sources */,
 				99AE7EF4901A1DCE3CAED13E /* StatCard.swift in Sources */,
 				54398753CE9DF1E3EA800570 /* SubmissionListView.swift in Sources */,
 				C52A12B41354A12B386E4B5E /* Theme.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0EAC81FFE6ADB3D2EB4AE102 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5C85033F2E1E22ADD0DEDDDE /* SM2AlgorithmTests.swift in Sources */,
+				5B5F6CBD023B67AE0D9E991D /* CodeEditorModelsTests.swift in Sources */,
+				3BFBD80857D6D7B194E3A8FF /* CacheManagerTests.swift in Sources */,
+				07D2E45E2B4DDD747E87E432 /* MockCodeEditorServiceTests.swift in Sources */,
+				36FD4374D2372109943348FE /* StoreManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -606,6 +697,38 @@
 			};
 			name = Debug;
 		};
+		27BED538A3FEA323D4323A7F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.leetreview.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LeetReview.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/LeetReview";
+			};
+			name = Debug;
+		};
+		E64241D19CA9BDEC02858415 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.leetreview.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LeetReview.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/LeetReview";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -626,6 +749,15 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
+		};
+		B8EA28EDB5A21AABE095AD9E /* Build configuration list for PBXNativeTarget "LeetReviewTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				27BED538A3FEA323D4323A7F /* Debug */,
+				E64241D19CA9BDEC02858415 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 

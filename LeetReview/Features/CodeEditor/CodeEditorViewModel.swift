@@ -28,7 +28,7 @@ final class CodeEditorViewModel {
 
     init(
         problem: CodeEditorProblemSnapshot,
-        service: any CodeEditorServicing = MockCodeEditorService()
+        service: any CodeEditorServicing = LiveCodeEditorService()
     ) {
         self.problem = problem
         self.service = service
@@ -108,6 +108,40 @@ final class CodeEditorViewModel {
 
     func copyCurrentCode() {
         inlineMessage = "Copied the current draft."
+    }
+
+    // MARK: - Load Previous Submission
+
+    private(set) var isLoadingPrevious = false
+
+    func loadPreviousSubmission() async {
+        guard !isLoadingPrevious else { return }
+        isLoadingPrevious = true
+
+        do {
+            let submissions = try await LeetCodeAPI.shared.fetchSubmissions(
+                questionSlug: problem.titleSlug,
+                limit: 10
+            )
+            // Find most recent accepted submission in the current language if possible
+            let accepted = submissions.first(where: {
+                $0.statusDisplay == "Accepted" && $0.lang.lowercased() == selectedLanguageSlug.lowercased()
+            }) ?? submissions.first(where: { $0.statusDisplay == "Accepted" })
+              ?? submissions.first
+
+            if let submission = accepted, let submissionId = Int(submission.id) {
+                let detail = try await LeetCodeAPI.shared.fetchSubmissionDetail(submissionId: submissionId)
+                code = detail.code
+                draftsByLanguageSlug[selectedLanguageSlug] = detail.code
+                inlineMessage = "Loaded your \(detail.lang) submission from \(submission.statusDisplay)."
+            } else {
+                inlineMessage = "No previous submissions found for this problem."
+            }
+        } catch {
+            inlineMessage = "Failed to load submission: \(error.localizedDescription)"
+        }
+
+        isLoadingPrevious = false
     }
 
     func dismissMessage() {

@@ -479,7 +479,7 @@ struct Problem: Decodable, Identifiable {
     let status: String?
 }
 
-struct TopicTag: Decodable {
+struct TopicTag: Codable {
     let name: String
     let slug: String?
     let translatedName: String?
@@ -489,7 +489,7 @@ struct ProblemDetailResponse: Decodable {
     let question: ProblemDetail
 }
 
-struct ProblemDetail: Decodable {
+struct ProblemDetail: Codable {
     let questionId: String?
     let frontendQuestionId: String?
     let title: String?
@@ -510,7 +510,7 @@ struct ProblemDetail: Decodable {
     let solution: OfficialSolution?
 }
 
-struct CodeSnippet: Decodable {
+struct CodeSnippet: Codable {
     let lang: String
     let langSlug: String?
     let code: String
@@ -684,7 +684,7 @@ struct OfficialSolutionContainer: Decodable {
     let solution: OfficialSolution?
 }
 
-struct OfficialSolution: Decodable {
+struct OfficialSolution: Codable {
     let id: String
     let title: String?
     let content: String?

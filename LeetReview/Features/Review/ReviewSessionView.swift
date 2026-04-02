@@ -138,12 +138,17 @@ struct ReviewSessionView: View {
 
             // Stats
             HStack(spacing: Theme.Spacing.lg) {
-                let totalCount = viewModel.totalDueCount
                 StatCard(
-                    title: "In Queue",
-                    value: "\(totalCount)",
+                    title: "Total",
+                    value: "\(viewModel.totalInQueue)",
                     color: Theme.Colors.accent,
                     icon: "tray.full"
+                )
+                StatCard(
+                    title: "Due",
+                    value: "\(viewModel.totalDueCount)",
+                    color: Theme.Colors.easy,
+                    icon: "clock"
                 )
             }
             .padding(.horizontal, Theme.Spacing.xl)

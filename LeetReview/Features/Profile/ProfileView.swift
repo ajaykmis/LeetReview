@@ -38,6 +38,9 @@ struct ProfileView: View {
         ScrollView {
             VStack(spacing: Theme.Spacing.lg) {
                 headerSection
+                if viewModel.contestRanking != nil {
+                    contestSection
+                }
                 progressSnapshot
                 difficultyBreakdown
                 activityHeatmap
@@ -48,17 +51,69 @@ struct ProfileView: View {
         }
     }
 
+    @ViewBuilder
+    private var contestSection: some View {
+        if let contest = viewModel.contestRanking {
+            VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+                Text("Contest")
+                    .font(.headline)
+                    .foregroundStyle(Theme.Colors.text)
+
+                HStack(spacing: Theme.Spacing.md) {
+                    if let rating = contest.rating {
+                        insightPill(title: "Rating", value: String(format: "%.0f", rating))
+                    }
+                    if let globalRanking = contest.globalRanking, globalRanking > 0 {
+                        insightPill(title: "Global Rank", value: "#\(formatNumber(globalRanking))")
+                    }
+                    if let attended = contest.attendedContestsCount {
+                        insightPill(title: "Attended", value: "\(attended)")
+                    }
+                }
+
+                if let topPercent = contest.topPercentage, topPercent > 0 {
+                    Text("Top \(String(format: "%.1f", topPercent))% of all contestants")
+                        .font(.caption)
+                        .foregroundStyle(Theme.Colors.accent)
+                }
+            }
+            .padding(Theme.Spacing.lg)
+            .background(Theme.Colors.card)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
+        }
+    }
+
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             HStack(spacing: Theme.Spacing.md) {
-                Image(systemName: "person.crop.circle.fill")
-                    .font(.system(size: 58))
-                    .foregroundStyle(Theme.Colors.accent)
+                if let avatarURL = viewModel.avatarURL {
+                    AsyncImage(url: avatarURL) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } placeholder: {
+                        Image(systemName: "person.crop.circle.fill")
+                            .font(.system(size: 58))
+                            .foregroundStyle(Theme.Colors.accent)
+                    }
+                    .frame(width: 58, height: 58)
+                    .clipShape(Circle())
+                } else {
+                    Image(systemName: "person.crop.circle.fill")
+                        .font(.system(size: 58))
+                        .foregroundStyle(Theme.Colors.accent)
+                }
 
                 VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                     Text(authManager.username ?? "User")
                         .font(.title2.bold())
                         .foregroundStyle(Theme.Colors.text)
+
+                    if let realName = viewModel.realName {
+                        Text(realName)
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.Colors.textSecondary)
+                    }
 
                     Text("\(viewModel.totalSolved) problems solved")
                         .font(.subheadline)
@@ -70,6 +125,22 @@ struct ProfileView: View {
                 }
 
                 Spacer()
+            }
+
+            // Profile details
+            if viewModel.company != nil || viewModel.school != nil {
+                HStack(spacing: Theme.Spacing.lg) {
+                    if let company = viewModel.company {
+                        Label(company, systemImage: "building.2")
+                            .font(.caption)
+                            .foregroundStyle(Theme.Colors.textSecondary)
+                    }
+                    if let school = viewModel.school {
+                        Label(school, systemImage: "graduationcap")
+                            .font(.caption)
+                            .foregroundStyle(Theme.Colors.textSecondary)
+                    }
+                }
             }
 
             HStack(spacing: Theme.Spacing.md) {
