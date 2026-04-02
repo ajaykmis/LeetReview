@@ -18,10 +18,8 @@ struct HighlightedCodeEditor: UIViewRepresentable {
         let container = CodeEditorContainerView()
         container.textView.delegate = context.coordinator
         container.textView.text = code
-        let toolbar = makeToolbar(for: container.textView, coordinator: context.coordinator)
-        container.textView.inputAccessoryView = toolbar
+        container.textView.inputAccessoryView = makeToolbar(for: container.textView, coordinator: context.coordinator)
         context.coordinator.containerView = container
-        context.coordinator.setupSuggestionBar(in: toolbar, textView: container.textView)
         context.coordinator.applyHighlighting(to: container.textView, language: languageSlug)
         return container
     }
@@ -197,8 +195,7 @@ struct HighlightedCodeEditor: UIViewRepresentable {
         let onFocusChange: ((Bool) -> Void)?
         weak var containerView: CodeEditorContainerView?
         private var highlightWorkItem: DispatchWorkItem?
-        private var suggestionBar: UIScrollView?
-        private var suggestionContainer: UIView?
+        private var popupView: UIView?
 
         init(code: Binding<String>, languageSlug: String, onFocusChange: ((Bool) -> Void)?) {
             _code = code
@@ -220,97 +217,146 @@ struct HighlightedCodeEditor: UIViewRepresentable {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: workItem)
 
             containerView?.updateLineNumbers()
-            updateSuggestions(for: textView)
+            showSuggestionPopup(for: textView)
         }
 
-        // MARK: - Autocomplete Suggestions
+        // MARK: - Autocomplete Popup
 
-        func setupSuggestionBar(in toolbar: UIView, textView: UITextView) {
-            let bar = UIScrollView()
-            bar.showsHorizontalScrollIndicator = false
-            bar.translatesAutoresizingMaskIntoConstraints = false
-            bar.isHidden = true
-            toolbar.addSubview(bar)
-
-            // Place suggestion bar above the toolbar
-            NSLayoutConstraint.activate([
-                bar.bottomAnchor.constraint(equalTo: toolbar.topAnchor),
-                bar.leadingAnchor.constraint(equalTo: toolbar.leadingAnchor),
-                bar.trailingAnchor.constraint(equalTo: toolbar.trailingAnchor),
-                bar.heightAnchor.constraint(equalToConstant: 34),
-            ])
-            bar.backgroundColor = UIColor(Theme.Colors.background).withAlphaComponent(0.95)
-
-            self.suggestionBar = bar
-            self.suggestionContainer = toolbar
+        private func dismissPopup() {
+            popupView?.removeFromSuperview()
+            popupView = nil
         }
 
-        private func updateSuggestions(for textView: UITextView) {
-            guard let bar = suggestionBar else { return }
+        private func showSuggestionPopup(for textView: UITextView) {
+            dismissPopup()
 
-            // Get the word being typed at cursor
             let text = textView.text ?? ""
-            guard let cursorRange = textView.selectedTextRange,
-                  let wordRange = textView.tokenizer.rangeEnclosingPosition(
-                      cursorRange.start, with: .word, inDirection: .storage(.backward)
-                  ),
-                  let currentWord = textView.text(in: wordRange),
-                  currentWord.count >= 2 else {
-                bar.isHidden = true
-                return
+            guard let cursorRange = textView.selectedTextRange else { return }
+
+            // Find the word being typed by scanning backwards from cursor
+            let cursorOffset = textView.offset(from: textView.beginningOfDocument, to: cursorRange.start)
+            let nsText = text as NSString
+            guard cursorOffset > 0 else { return }
+
+            // Scan backwards for word start
+            var wordStart = cursorOffset
+            while wordStart > 0 {
+                let ch = nsText.character(at: wordStart - 1)
+                guard let scalar = Unicode.Scalar(ch) else { break }
+                if CharacterSet.alphanumerics.contains(scalar) || scalar == "_" {
+                    wordStart -= 1
+                } else {
+                    break
+                }
             }
 
-            // Extract all unique identifiers from the code
+            let partialWord = nsText.substring(with: NSRange(location: wordStart, length: cursorOffset - wordStart))
+            guard partialWord.count >= 2 else { return }
+
+            // Collect identifiers from code + language keywords
             let identifiers = extractIdentifiers(from: text, language: currentLanguage)
+            let prefix = partialWord.lowercased()
+            let matches = identifiers
+                .filter { $0.lowercased().hasPrefix(prefix) && $0 != partialWord }
+                .sorted()
+                .prefix(5)
 
-            // Filter matching suggestions (exclude exact match)
-            let prefix = currentWord.lowercased()
-            let matches = identifiers.filter {
-                $0.lowercased().hasPrefix(prefix) && $0.lowercased() != prefix
-            }.sorted().prefix(8)
+            guard !matches.isEmpty else { return }
 
-            guard !matches.isEmpty else {
-                bar.isHidden = true
-                return
-            }
+            // Get cursor position in textView coordinates
+            let cursorRect = textView.caretRect(for: cursorRange.start)
+            guard !cursorRect.isNull && !cursorRect.isInfinite else { return }
 
-            // Build suggestion buttons
-            bar.subviews.forEach { $0.removeFromSuperview() }
+            // Build popup
+            let popup = UIView()
+            popup.backgroundColor = UIColor(Theme.Colors.card)
+            popup.layer.cornerRadius = 8
+            popup.layer.shadowColor = UIColor.black.cgColor
+            popup.layer.shadowOpacity = 0.3
+            popup.layer.shadowRadius = 8
+            popup.layer.shadowOffset = CGSize(width: 0, height: -2)
+            popup.layer.borderWidth = 0.5
+            popup.layer.borderColor = UIColor(Theme.Colors.textSecondary).withAlphaComponent(0.2).cgColor
+
             let stack = UIStackView()
-            stack.axis = .horizontal
-            stack.spacing = 8
-            stack.alignment = .center
+            stack.axis = .vertical
+            stack.spacing = 0
             stack.translatesAutoresizingMaskIntoConstraints = false
-            bar.addSubview(stack)
+            popup.addSubview(stack)
 
             NSLayoutConstraint.activate([
-                stack.leadingAnchor.constraint(equalTo: bar.contentLayoutGuide.leadingAnchor, constant: 8),
-                stack.trailingAnchor.constraint(equalTo: bar.contentLayoutGuide.trailingAnchor, constant: -8),
-                stack.topAnchor.constraint(equalTo: bar.contentLayoutGuide.topAnchor),
-                stack.bottomAnchor.constraint(equalTo: bar.contentLayoutGuide.bottomAnchor),
-                stack.heightAnchor.constraint(equalTo: bar.frameLayoutGuide.heightAnchor),
+                stack.topAnchor.constraint(equalTo: popup.topAnchor, constant: 4),
+                stack.bottomAnchor.constraint(equalTo: popup.bottomAnchor, constant: -4),
+                stack.leadingAnchor.constraint(equalTo: popup.leadingAnchor),
+                stack.trailingAnchor.constraint(equalTo: popup.trailingAnchor),
             ])
 
-            for suggestion in matches {
+            let replaceRange = NSRange(location: wordStart, length: cursorOffset - wordStart)
+
+            for (i, suggestion) in matches.enumerated() {
                 let btn = UIButton(type: .system)
-                btn.setTitle(suggestion, for: .normal)
-                btn.titleLabel?.font = .monospacedSystemFont(ofSize: 13, weight: .medium)
-                btn.setTitleColor(UIColor(Theme.Colors.accent), for: .normal)
-                btn.backgroundColor = UIColor(Theme.Colors.card)
-                btn.layer.cornerRadius = 6
-                btn.contentEdgeInsets = UIEdgeInsets(top: 4, left: 10, bottom: 4, right: 10)
-                btn.addAction(UIAction { [weak self] _ in
-                    // Replace the current partial word with the suggestion
-                    guard let self, let range = textView.selectedTextRange,
-                          let wordStart = textView.tokenizer.rangeEnclosingPosition(
-                              range.start, with: .word, inDirection: .storage(.backward)
-                          ) else { return }
-                    textView.replace(wordStart, withText: suggestion)
+
+                // Highlight the matching prefix
+                let attrTitle = NSMutableAttributedString(
+                    string: suggestion,
+                    attributes: [
+                        .font: UIFont.monospacedSystemFont(ofSize: 14, weight: .medium),
+                        .foregroundColor: UIColor(Theme.Colors.text),
+                    ]
+                )
+                let matchLen = min(partialWord.count, suggestion.count)
+                attrTitle.addAttribute(
+                    .foregroundColor,
+                    value: UIColor(Theme.Colors.accent),
+                    range: NSRange(location: 0, length: matchLen)
+                )
+                btn.setAttributedTitle(attrTitle, for: .normal)
+                btn.contentHorizontalAlignment = .leading
+                btn.contentEdgeInsets = UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
+
+                // Add subtle separator between items
+                if i > 0 {
+                    let sep = UIView()
+                    sep.backgroundColor = UIColor(Theme.Colors.textSecondary).withAlphaComponent(0.1)
+                    sep.translatesAutoresizingMaskIntoConstraints = false
+                    sep.heightAnchor.constraint(equalToConstant: 0.5).isActive = true
+                    stack.addArrangedSubview(sep)
+                }
+
+                btn.addAction(UIAction { [weak self, weak textView] _ in
+                    guard let self, let textView else { return }
+                    // Replace the partial word with the full suggestion
+                    let nsCode = (textView.text ?? "") as NSString
+                    let newText = nsCode.replacingCharacters(in: replaceRange, with: suggestion)
+                    textView.text = newText
+                    self.code = newText
+
+                    // Move cursor to end of inserted word
+                    let newPos = replaceRange.location + suggestion.count
+                    if let pos = textView.position(from: textView.beginningOfDocument, offset: newPos) {
+                        textView.selectedTextRange = textView.textRange(from: pos, to: pos)
+                    }
+
+                    self.dismissPopup()
+                    self.applyHighlighting(to: textView, language: self.currentLanguage)
+                    self.containerView?.updateLineNumbers()
                 }, for: .touchUpInside)
+
                 stack.addArrangedSubview(btn)
             }
 
-            bar.isHidden = false
+            // Position popup above the cursor
+            let popupWidth: CGFloat = 200
+            let popupHeight = CGFloat(matches.count) * 36 + 8
+            var popupX = cursorRect.origin.x - 10
+            let popupY = cursorRect.origin.y - popupHeight - 4
+
+            // Keep within textView bounds
+            popupX = max(8, min(popupX, textView.bounds.width - popupWidth - 8))
+
+            popup.frame = CGRect(x: popupX, y: max(0, popupY), width: popupWidth, height: popupHeight)
+            textView.addSubview(popup)
+            self.popupView = popup
         }
 
         private func extractIdentifiers(from code: String, language: String) -> Set<String> {
@@ -375,6 +421,14 @@ struct HighlightedCodeEditor: UIViewRepresentable {
 
         func textViewDidEndEditing(_ textView: UITextView) {
             onFocusChange?(false)
+            dismissPopup()
+        }
+
+        func textViewDidChangeSelection(_ textView: UITextView) {
+            // Dismiss popup when user taps elsewhere (selection change without text change)
+            if !isUpdatingFromSwiftUI {
+                dismissPopup()
+            }
         }
 
         nonisolated func insertText(_ text: String, into textView: UITextView) {
