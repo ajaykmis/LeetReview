@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ProblemFilterView: View {
     @Bindable var viewModel: ProblemListViewModel
+    @Environment(ThemeManager.self) private var themeManager
     @Environment(\.dismiss) private var dismiss
 
     // Common LeetCode topic tags
@@ -30,7 +31,7 @@ struct ProblemFilterView: View {
             }
             .navigationTitle("Filters")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarColorScheme(themeManager.toolbarColorScheme, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Reset") {

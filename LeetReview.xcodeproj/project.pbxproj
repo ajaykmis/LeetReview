@@ -7,21 +7,30 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1178A20166C90600A544701F /* CodeEditorModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE22FE6ABA9E25F9303EB48 /* CodeEditorModels.swift */; };
+		18139D3FADB455AF0105F67F /* CodeEditorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FB10B2E559234FF09B84CD7 /* CodeEditorService.swift */; };
+		1861BA264DCA5F5F55BFCA01 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 351D2AC1C9003047DAABEC5F /* FirebaseMessaging */; };
 		200851B70A4FC0E8AEEFC70E /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70D0DA884F7C5005BB66F7AE /* DashboardView.swift */; };
+		23B52C648BE537E14965C53A /* ActionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3CF10F4A54853592F2B56D /* ActionCard.swift */; };
 		2EA137A45297BACA4EB80EE2 /* ProblemListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF3C262325764529F08CC0B5 /* ProblemListViewModel.swift */; };
 		33B2DC91300137F6BFDB7B67 /* DifficultyBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBBAF57197388029504419E6 /* DifficultyBadge.swift */; };
+		3BEB169BFE790373290A00EB /* ContestListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC5DB7FC814F9E843FA0A09 /* ContestListView.swift */; };
+		3F78895B8E91D3DB2CAD87A8 /* CodeEditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97839B1F90BA661ED82CFAF /* CodeEditorViewModel.swift */; };
 		4013310DB66CD36E39108709 /* ProblemFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5BFB432A140E3CAA7DAAB69 /* ProblemFilterView.swift */; };
 		441AEEAD645914A1A580DE0C /* ReviewCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1776E9F09A8C7BA053D668F0 /* ReviewCardView.swift */; };
 		527CA9B025E55167A416B9E6 /* LeetCodeAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D32E23CC7D08150130C2057 /* LeetCodeAPI.swift */; };
 		54398753CE9DF1E3EA800570 /* SubmissionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77AEF482250D75873E164A23 /* SubmissionListView.swift */; };
 		621D6F2F5AC801953CA005EE /* ReviewSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BC227B233E7C80540520890 /* ReviewSessionView.swift */; };
 		778FE424BDFDB0559237B352 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F0069EE9C3CE69280CF81BB /* AuthManager.swift */; };
+		7B4E3D0C53ACD75D7A971F6A /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 83C30EC2A045A362DAB0B46D /* FirebaseAuth */; };
 		7EC67652FE7303508A9A5A21 /* ReviewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A81673365F010A0AD3BA97 /* ReviewViewModel.swift */; };
 		803121FE37254C4FDCD3B0E4 /* DailyChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CA8423074EB607C578986B4 /* DailyChallenge.swift */; };
 		8BBC0716193727BE102096FC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3629885D409F1EDD9F5F03C5 /* ContentView.swift */; };
+		935B8D5E61F69CFC5F28612B /* AuthenticatedWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C76BB70A5F07F9CBD6C633A /* AuthenticatedWebView.swift */; };
 		944D52D759BB44C86DACBEC1 /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37B600B36AE60257CEBF8267 /* DashboardViewModel.swift */; };
 		99AE7EF4901A1DCE3CAED13E /* StatCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 583F3D3A15DD58C928246F98 /* StatCard.swift */; };
 		AC21A0CC398919ED41A27BD1 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FADC627B2130CBCD344D3BD7 /* SettingsView.swift */; };
+		ACA9EA034443616E7C165387 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A755744FD2182D89108AB7DE /* GoogleService-Info.plist */; };
 		AEBAB7AA1FBC526514F1ED02 /* GraphQLQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = E34FCF7485814D4312D838D5 /* GraphQLQueries.swift */; };
 		B92F109BFC3482C1604B4D73 /* ProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A15C4CAA8E2A74889168F43D /* ProfileViewModel.swift */; };
 		BB30E80396C4A6F0E006194C /* LeetReviewApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CFFEE765BFC60FC1F909395 /* LeetReviewApp.swift */; };
@@ -35,12 +44,15 @@
 		D0205B4E9D96EA05A52CFD07 /* ProblemDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EE8794ECD0ED8332E04C146 /* ProblemDetailView.swift */; };
 		DB82BF7F6C817EB1D290D770 /* CacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2257A6C50D838CD11153A12F /* CacheManager.swift */; };
 		DFDFA2000726E5D26A30F86A /* ProblemListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D5DC6FFC7C4900947B6722 /* ProblemListView.swift */; };
+		EA71EBDB6C72CCA3D67A6075 /* CodeEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FEFD22D4EE912FCBB1506BB /* CodeEditorView.swift */; };
 		F73DC9C79533AF87B5475764 /* CodeBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA146C1E1B39DEC97616F684 /* CodeBlock.swift */; };
 		F74D959ECE07FDF36DFC6CE0 /* ReviewStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1628A4B24323EE892CA00F35 /* ReviewStore.swift */; };
 		F9D657467589649241E88A0A /* ProblemDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69F26F3D1BD169DE482DF2E3 /* ProblemDetailViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0AC5DB7FC814F9E843FA0A09 /* ContestListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContestListView.swift; sourceTree = "<group>"; };
+		0FEFD22D4EE912FCBB1506BB /* CodeEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeEditorView.swift; sourceTree = "<group>"; };
 		1628A4B24323EE892CA00F35 /* ReviewStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewStore.swift; sourceTree = "<group>"; };
 		1776E9F09A8C7BA053D668F0 /* ReviewCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewCardView.swift; sourceTree = "<group>"; };
 		1BC227B233E7C80540520890 /* ReviewSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewSessionView.swift; sourceTree = "<group>"; };
@@ -48,6 +60,7 @@
 		2257A6C50D838CD11153A12F /* CacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheManager.swift; sourceTree = "<group>"; };
 		296551FA7A866294B4DF8B62 /* CodeViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeViewerView.swift; sourceTree = "<group>"; };
 		2BABBFBA155BA87A89648F6E /* LoginWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginWebView.swift; sourceTree = "<group>"; };
+		2FB10B2E559234FF09B84CD7 /* CodeEditorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeEditorService.swift; sourceTree = "<group>"; };
 		3629885D409F1EDD9F5F03C5 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		37B600B36AE60257CEBF8267 /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
 		4CFFEE765BFC60FC1F909395 /* LeetReviewApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeetReviewApp.swift; sourceTree = "<group>"; };
@@ -61,15 +74,20 @@
 		81D5DC6FFC7C4900947B6722 /* ProblemListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProblemListView.swift; sourceTree = "<group>"; };
 		8EE8794ECD0ED8332E04C146 /* ProblemDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProblemDetailView.swift; sourceTree = "<group>"; };
 		94793A8159A5A61A221F7008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		9C76BB70A5F07F9CBD6C633A /* AuthenticatedWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticatedWebView.swift; sourceTree = "<group>"; };
 		9D6FE5482B070FAC52A8EA6D /* LeetReview.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = LeetReview.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A15C4CAA8E2A74889168F43D /* ProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewModel.swift; sourceTree = "<group>"; };
 		A1F7529E171EB72BAA7B425D /* Date+Relative.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Relative.swift"; sourceTree = "<group>"; };
+		A755744FD2182D89108AB7DE /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		AE3CF10F4A54853592F2B56D /* ActionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionCard.swift; sourceTree = "<group>"; };
 		B2A81673365F010A0AD3BA97 /* ReviewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewViewModel.swift; sourceTree = "<group>"; };
 		CA146C1E1B39DEC97616F684 /* CodeBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeBlock.swift; sourceTree = "<group>"; };
 		D5BFB432A140E3CAA7DAAB69 /* ProblemFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProblemFilterView.swift; sourceTree = "<group>"; };
 		E2885203532B62F05D069E3A /* Color+Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Theme.swift"; sourceTree = "<group>"; };
 		E34FCF7485814D4312D838D5 /* GraphQLQueries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphQLQueries.swift; sourceTree = "<group>"; };
+		E97839B1F90BA661ED82CFAF /* CodeEditorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeEditorViewModel.swift; sourceTree = "<group>"; };
 		EBBAF57197388029504419E6 /* DifficultyBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DifficultyBadge.swift; sourceTree = "<group>"; };
+		EEE22FE6ABA9E25F9303EB48 /* CodeEditorModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeEditorModels.swift; sourceTree = "<group>"; };
 		FADC627B2130CBCD344D3BD7 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		FB6DB23936831C5B860458D6 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		FF3C262325764529F08CC0B5 /* ProblemListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProblemListViewModel.swift; sourceTree = "<group>"; };
@@ -81,6 +99,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				CC0476816B11CE48E24B1FFA /* KeychainAccess in Frameworks */,
+				7B4E3D0C53ACD75D7A971F6A /* FirebaseAuth in Frameworks */,
+				1861BA264DCA5F5F55BFCA01 /* FirebaseMessaging in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -96,6 +116,17 @@
 				77AEF482250D75873E164A23 /* SubmissionListView.swift */,
 			);
 			path = ProblemDetail;
+			sourceTree = "<group>";
+		};
+		3543DBC140FADEA01BA5FEDF /* CodeEditor */ = {
+			isa = PBXGroup;
+			children = (
+				EEE22FE6ABA9E25F9303EB48 /* CodeEditorModels.swift */,
+				2FB10B2E559234FF09B84CD7 /* CodeEditorService.swift */,
+				0FEFD22D4EE912FCBB1506BB /* CodeEditorView.swift */,
+				E97839B1F90BA661ED82CFAF /* CodeEditorViewModel.swift */,
+			);
+			path = CodeEditor;
 			sourceTree = "<group>";
 		};
 		3C28D9F243E625CA72B6A03D /* App */ = {
@@ -141,6 +172,7 @@
 				3C28D9F243E625CA72B6A03D /* App */,
 				BD0B3BD3A9CEEB8090BC8B8C /* Core */,
 				97529CF94F388990FC7E916A /* Features */,
+				E1120B96B00148AB7D4D14E5 /* Resources */,
 				5D8F26A88AEB35AE8A7EAB68 /* Shared */,
 			);
 			path = LeetReview;
@@ -178,6 +210,7 @@
 		97529CF94F388990FC7E916A /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				3543DBC140FADEA01BA5FEDF /* CodeEditor */,
 				E86CA8E011C3F83497D15C8C /* Dashboard */,
 				19EDE81A08B1DA1127B29497 /* ProblemDetail */,
 				7DFFA70B0CB1E35218EC50A4 /* Problems */,
@@ -191,6 +224,8 @@
 		9ADBFE4F1A9802306A7B768D /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				AE3CF10F4A54853592F2B56D /* ActionCard.swift */,
+				9C76BB70A5F07F9CBD6C633A /* AuthenticatedWebView.swift */,
 				CA146C1E1B39DEC97616F684 /* CodeBlock.swift */,
 				EBBAF57197388029504419E6 /* DifficultyBadge.swift */,
 				583F3D3A15DD58C928246F98 /* StatCard.swift */,
@@ -251,9 +286,18 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		E1120B96B00148AB7D4D14E5 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A755744FD2182D89108AB7DE /* GoogleService-Info.plist */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		E86CA8E011C3F83497D15C8C /* Dashboard */ = {
 			isa = PBXGroup;
 			children = (
+				0AC5DB7FC814F9E843FA0A09 /* ContestListView.swift */,
 				6CA8423074EB607C578986B4 /* DailyChallenge.swift */,
 				70D0DA884F7C5005BB66F7AE /* DashboardView.swift */,
 				37B600B36AE60257CEBF8267 /* DashboardViewModel.swift */,
@@ -277,6 +321,7 @@
 			buildConfigurationList = BFA4A59D4B8E43AD996B4DF8 /* Build configuration list for PBXNativeTarget "LeetReview" */;
 			buildPhases = (
 				AB111EF3F11B7D7B0B7743D4 /* Sources */,
+				6DA33A9A616EB762CD480624 /* Resources */,
 				8A7159D2F48DAC9BFEF8D7ED /* Frameworks */,
 			);
 			buildRules = (
@@ -286,6 +331,8 @@
 			name = LeetReview;
 			packageProductDependencies = (
 				BC29B4521F9F153944EC7F4E /* KeychainAccess */,
+				83C30EC2A045A362DAB0B46D /* FirebaseAuth */,
+				351D2AC1C9003047DAABEC5F /* FirebaseMessaging */,
 			);
 			productName = LeetReview;
 			productReference = 9D6FE5482B070FAC52A8EA6D /* LeetReview.app */;
@@ -300,6 +347,10 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
+					BD9C121A89A4F51A772CB722 = {
+						DevelopmentTeam = FY27ZMHFNZ;
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = B402EEE32A7EF6E45FCC83E8 /* Build configuration list for PBXProject "LeetReview" */;
@@ -313,6 +364,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				A6AAFC1AB0C62AD1D5878F9A /* XCRemoteSwiftPackageReference "KeychainAccess" */,
+				8CC5881751AF9DFD937675AC /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = DB1A1C0E1631301BC4618E5C /* Products */;
@@ -324,17 +376,35 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		6DA33A9A616EB762CD480624 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ACA9EA034443616E7C165387 /* GoogleService-Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		AB111EF3F11B7D7B0B7743D4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				23B52C648BE537E14965C53A /* ActionCard.swift in Sources */,
 				778FE424BDFDB0559237B352 /* AuthManager.swift in Sources */,
+				935B8D5E61F69CFC5F28612B /* AuthenticatedWebView.swift in Sources */,
 				DB82BF7F6C817EB1D290D770 /* CacheManager.swift in Sources */,
 				F73DC9C79533AF87B5475764 /* CodeBlock.swift in Sources */,
+				1178A20166C90600A544701F /* CodeEditorModels.swift in Sources */,
+				18139D3FADB455AF0105F67F /* CodeEditorService.swift in Sources */,
+				EA71EBDB6C72CCA3D67A6075 /* CodeEditorView.swift in Sources */,
+				3F78895B8E91D3DB2CAD87A8 /* CodeEditorViewModel.swift in Sources */,
 				C0ED85BD0DAEE1BC3C383ED1 /* CodeViewerView.swift in Sources */,
 				C75E41C8333689D339A2F62E /* Color+Theme.swift in Sources */,
 				8BBC0716193727BE102096FC /* ContentView.swift in Sources */,
+				3BEB169BFE790373290A00EB /* ContestListView.swift in Sources */,
 				803121FE37254C4FDCD3B0E4 /* DailyChallenge.swift in Sources */,
 				200851B70A4FC0E8AEEFC70E /* DashboardView.swift in Sources */,
 				944D52D759BB44C86DACBEC1 /* DashboardViewModel.swift in Sources */,
@@ -371,6 +441,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = FY27ZMHFNZ;
 				INFOPLIST_FILE = LeetReview/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = LeetReview;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -380,7 +452,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.leetreview.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.leetreview;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -451,6 +523,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = FY27ZMHFNZ;
 				INFOPLIST_FILE = LeetReview/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = LeetReview;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -460,7 +534,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.leetreview.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.leetreview;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -556,6 +630,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		8CC5881751AF9DFD937675AC /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.0;
+			};
+		};
 		A6AAFC1AB0C62AD1D5878F9A /* XCRemoteSwiftPackageReference "KeychainAccess" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/kishikawakatsumi/KeychainAccess";
@@ -567,6 +649,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		351D2AC1C9003047DAABEC5F /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8CC5881751AF9DFD937675AC /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
+		83C30EC2A045A362DAB0B46D /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8CC5881751AF9DFD937675AC /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
 		BC29B4521F9F153944EC7F4E /* KeychainAccess */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A6AAFC1AB0C62AD1D5878F9A /* XCRemoteSwiftPackageReference "KeychainAccess" */;

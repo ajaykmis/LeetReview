@@ -15,6 +15,9 @@ packages:
   KeychainAccess:
     url: https://github.com/kishikawakatsumi/KeychainAccess
     from: "4.2.2"
+  firebase-ios-sdk:
+    url: https://github.com/firebase/firebase-ios-sdk
+    from: "11.0.0"
 targets:
   LeetReview:
     type: application
@@ -24,7 +27,9 @@ targets:
       - path: LeetReview
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.leetreview.app
+        PRODUCT_BUNDLE_IDENTIFIER: com.leetreview
+        DEVELOPMENT_TEAM: FY27ZMHFNZ
+        CODE_SIGN_STYLE: Automatic
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: "UIInterfaceOrientationPortrait"
         INFOPLIST_KEY_CFBundleDisplayName: LeetReview
@@ -33,3 +38,7 @@ targets:
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
     dependencies:
       - package: KeychainAccess
+      - package: firebase-ios-sdk
+        product: FirebaseAuth
+      - package: firebase-ios-sdk
+        product: FirebaseMessaging

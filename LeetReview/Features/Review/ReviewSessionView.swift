@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct ReviewSessionView: View {
+    @Environment(ThemeManager.self) private var themeManager
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel = ReviewViewModel()
 
@@ -20,7 +21,7 @@ struct ReviewSessionView: View {
             }
             .navigationTitle("Review")
             .toolbarBackground(Theme.Colors.background, for: .navigationBar)
-            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarColorScheme(themeManager.toolbarColorScheme, for: .navigationBar)
             .toolbar {
                 if viewModel.hasItems {
                     ToolbarItem(placement: .topBarTrailing) {

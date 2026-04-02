@@ -8,17 +8,30 @@ final class AuthManager {
     private(set) var isLoggedIn = false
     private(set) var username: String?
     private(set) var isLoading = false
+    private(set) var isReadOnly = false
+
+    var hasLeetCodeSession: Bool {
+        Self.getSessionCookie() != nil
+    }
 
     private nonisolated(unsafe) static let keychain = Keychain(service: "com.leetreview.app")
-    private nonisolated(unsafe) static let sessionKey = "LEETCODE_SESSION"
-    private nonisolated(unsafe) static let csrfKey = "csrftoken"
-    private nonisolated(unsafe) static let usernameKey = "username"
+    private nonisolated static let sessionKey = "LEETCODE_SESSION"
+    private nonisolated static let csrfKey = "csrftoken"
+    private nonisolated static let usernameKey = "username"
 
     // MARK: - Session Management
 
     func checkSession() async {
         guard Self.getSessionCookie() != nil else {
-            isLoggedIn = false
+            if let storedUsername = try? Self.keychain.get(Self.usernameKey), !storedUsername.isEmpty {
+                username = storedUsername
+                isLoggedIn = true
+                isReadOnly = true
+            } else {
+                isLoggedIn = false
+                username = nil
+                isReadOnly = false
+            }
             return
         }
 
@@ -30,6 +43,7 @@ final class AuthManager {
             if status.isSignedIn, let name = status.username {
                 isLoggedIn = true
                 username = name
+                isReadOnly = false
                 try? Self.keychain.set(name, key: Self.usernameKey)
             } else {
                 clearCredentials()
@@ -39,6 +53,7 @@ final class AuthManager {
             if Self.getSessionCookie() != nil {
                 isLoggedIn = true
                 username = try? Self.keychain.get(Self.usernameKey)
+                isReadOnly = false
             }
         }
     }
@@ -53,10 +68,23 @@ final class AuthManager {
         await checkSession()
     }
 
+    func loginWithUsername(_ username: String) {
+        let trimmedUsername = username.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedUsername.isEmpty else { return }
+
+        try? Self.keychain.remove(Self.sessionKey)
+        try? Self.keychain.remove(Self.csrfKey)
+        try? Self.keychain.set(trimmedUsername, key: Self.usernameKey)
+        self.username = trimmedUsername
+        isLoggedIn = true
+        isReadOnly = true
+    }
+
     func logout() {
         clearCredentials()
         isLoggedIn = false
         username = nil
+        isReadOnly = false
     }
 
     private func clearCredentials() {
@@ -65,6 +93,7 @@ final class AuthManager {
         try? Self.keychain.remove(Self.usernameKey)
         isLoggedIn = false
         username = nil
+        isReadOnly = false
     }
 
     // MARK: - Static Accessors (for API layer)
@@ -75,5 +104,9 @@ final class AuthManager {
 
     nonisolated static func getCSRFToken() -> String? {
         try? keychain.get(csrfKey)
+    }
+
+    nonisolated static func hasSessionCredentials() -> Bool {
+        getSessionCookie() != nil
     }
 }

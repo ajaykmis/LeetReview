@@ -66,6 +66,8 @@ struct LoginWebView: UIViewRepresentable {
 struct LoginView: View {
     @Environment(AuthManager.self) private var authManager
     @State private var showingWebView = false
+    @State private var showingUsernamePrompt = false
+    @State private var username = ""
 
     var body: some View {
         ZStack {
@@ -105,6 +107,20 @@ struct LoginView: View {
                 }
                 .padding(.horizontal, Theme.Spacing.xl)
 
+                Button {
+                    username = authManager.username ?? ""
+                    showingUsernamePrompt = true
+                } label: {
+                    Text("Continue with Username")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(Theme.Colors.accent)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Theme.Colors.card)
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
+                }
+                .padding(.horizontal, Theme.Spacing.xl)
+
                 Spacer()
                     .frame(height: 60)
             }
@@ -125,6 +141,18 @@ struct LoginView: View {
                     }
                 }
             }
+        }
+        .alert("Use LeetCode Username", isPresented: $showingUsernamePrompt) {
+            TextField("Username", text: $username)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+
+            Button("Cancel", role: .cancel) {}
+            Button("Continue") {
+                authManager.loginWithUsername(username)
+            }
+        } message: {
+            Text("This enables public profile, problem browsing, and contests without requiring a session cookie.")
         }
     }
 }

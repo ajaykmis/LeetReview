@@ -2,7 +2,10 @@ import SwiftUI
 @preconcurrency import WebKit
 
 struct ProblemDetailView: View {
+    @Environment(AuthManager.self) private var authManager
+    @Environment(ThemeManager.self) private var themeManager
     @State private var viewModel: ProblemDetailViewModel
+    @State private var problemHTMLHeight: CGFloat = 320
 
     init(titleSlug: String, title: String) {
         _viewModel = State(wrappedValue: ProblemDetailViewModel(
@@ -27,48 +30,74 @@ struct ProblemDetailView: View {
         .navigationTitle(viewModel.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(Theme.Colors.background, for: .navigationBar)
+        .toolbarColorScheme(themeManager.toolbarColorScheme, for: .navigationBar)
         .task {
             await viewModel.loadAll()
         }
     }
 
-    // MARK: - Detail Content
-
     @ViewBuilder
     private func detailContent(_ detail: ProblemDetail) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
-                // Header: difficulty + stats
                 headerSection(detail)
-
-                // Topic tags
-                if !detail.topicTags.isEmpty {
-                    tagsSection(detail.topicTags)
-                }
-
-                // Problem statement (HTML)
-                if let content = detail.content, !content.isEmpty {
-                    problemStatementSection(content)
-                }
-
-                // Submissions section
+                tagsSection(detail.topicTags)
+                sectionPicker
+                sectionContent(detail)
                 submissionsSection
-
                 Spacer(minLength: Theme.Spacing.xl)
             }
             .padding(Theme.Spacing.lg)
         }
     }
 
-    // MARK: - Header
-
     @ViewBuilder
     private func headerSection(_ detail: ProblemDetail) -> some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-            HStack(spacing: Theme.Spacing.md) {
-                DifficultyBadge(difficulty: detail.difficulty)
+            HStack(alignment: .top, spacing: Theme.Spacing.md) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                    Text(viewModel.title)
+                        .font(.title3.bold())
+                        .foregroundStyle(Theme.Colors.text)
+
+                    DifficultyBadge(difficulty: detail.difficulty)
+                }
+
                 Spacer()
+
                 statsRow(detail)
+            }
+
+            Text(viewModel.insightSummary)
+                .font(.subheadline)
+                .foregroundStyle(Theme.Colors.textSecondary)
+
+            HStack(spacing: Theme.Spacing.md) {
+                metricPill(
+                    title: "Accepted",
+                    value: viewModel.totalAccepted ?? "--",
+                    color: Theme.Colors.easy
+                )
+                metricPill(
+                    title: "Attempts",
+                    value: viewModel.totalSubmissions ?? "--",
+                    color: Theme.Colors.medium
+                )
+            }
+
+            if let editorProblem = viewModel.editorProblem {
+                NavigationLink {
+                    CodeEditorView(problem: editorProblem)
+                } label: {
+                    editorEntryRow(
+                        title: "Open Editor",
+                        subtitle: viewModel.editorLanguageCount == 1
+                            ? "Start solving in \(editorProblem.starterCodes.first?.languageName ?? "the editor")."
+                            : "Start solving with \(viewModel.editorLanguageCount) supported languages.",
+                        tint: Theme.Colors.accent
+                    )
+                }
+                .buttonStyle(.plain)
             }
         }
         .padding(Theme.Spacing.lg)
@@ -78,7 +107,7 @@ struct ProblemDetailView: View {
 
     @ViewBuilder
     private func statsRow(_ detail: ProblemDetail) -> some View {
-        HStack(spacing: Theme.Spacing.lg) {
+        VStack(alignment: .trailing, spacing: Theme.Spacing.sm) {
             if let rate = viewModel.acceptanceRate {
                 statItem(icon: "chart.bar.fill", label: rate)
             }
@@ -113,33 +142,100 @@ struct ProblemDetailView: View {
         }
     }
 
-    // MARK: - Tags
+    @ViewBuilder
+    private func metricPill(title: String, value: String, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+            Text(title.uppercased())
+                .font(.caption2.bold())
+                .foregroundStyle(Theme.Colors.textSecondary)
+            Text(value)
+                .font(.subheadline.bold().monospacedDigit())
+                .foregroundStyle(color)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Theme.Spacing.md)
+        .background(Theme.Colors.background.opacity(0.7))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
 
     @ViewBuilder
     private func tagsSection(_ tags: [TopicTag]) -> some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            Text("Topics")
-                .font(.subheadline.bold())
-                .foregroundStyle(Theme.Colors.text)
+        if !tags.isEmpty {
+            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                Text("Topics")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(Theme.Colors.text)
 
-            FlowLayout(spacing: Theme.Spacing.sm) {
-                ForEach(tags, id: \.name) { tag in
-                    Text(tag.name)
-                        .font(.caption)
-                        .foregroundStyle(Theme.Colors.accent)
-                        .padding(.horizontal, Theme.Spacing.sm)
-                        .padding(.vertical, Theme.Spacing.xs)
-                        .background(Theme.Colors.accent.opacity(0.12))
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                FlowLayout(spacing: Theme.Spacing.sm) {
+                    ForEach(tags, id: \.name) { tag in
+                        Text(tag.name)
+                            .font(.caption)
+                            .foregroundStyle(Theme.Colors.accent)
+                            .padding(.horizontal, Theme.Spacing.sm)
+                            .padding(.vertical, Theme.Spacing.xs)
+                            .background(Theme.Colors.accent.opacity(0.12))
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
+                }
+            }
+            .padding(Theme.Spacing.lg)
+            .background(Theme.Colors.card)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
+        }
+    }
+
+    private var sectionPicker: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Theme.Spacing.sm) {
+                ForEach(ProblemDetailViewModel.DetailSection.allCases) { section in
+                    Button {
+                        viewModel.selectedSection = section
+                    } label: {
+                        HStack(spacing: Theme.Spacing.xs) {
+                            Image(systemName: section.icon)
+                            Text(section.rawValue)
+                        }
+                        .font(.caption.bold())
+                        .foregroundStyle(
+                            viewModel.selectedSection == section ? Theme.Colors.background : Theme.Colors.text
+                        )
+                        .padding(.horizontal, Theme.Spacing.md)
+                        .padding(.vertical, Theme.Spacing.sm)
+                        .background(
+                            viewModel.selectedSection == section
+                                ? Theme.Colors.accent
+                                : Theme.Colors.card
+                        )
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
                 }
             }
         }
-        .padding(Theme.Spacing.lg)
-        .background(Theme.Colors.card)
-        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
     }
 
-    // MARK: - Problem Statement
+    @ViewBuilder
+    private func sectionContent(_ detail: ProblemDetail) -> some View {
+        switch viewModel.selectedSection {
+        case .description:
+            if let content = detail.content, !content.isEmpty {
+                problemStatementSection(content)
+            } else {
+                placeholderSection(
+                    title: "Description unavailable",
+                    message: "Problem content was not returned for this question."
+                )
+            }
+        case .hints:
+            hintsSection
+        case .editorial:
+            editorialSection
+        case .community:
+            communitySection
+        case .similar:
+            similarSection
+        }
+    }
 
     @ViewBuilder
     private func problemStatementSection(_ html: String) -> some View {
@@ -148,15 +244,209 @@ struct ProblemDetailView: View {
                 .font(.subheadline.bold())
                 .foregroundStyle(Theme.Colors.text)
 
-            ProblemHTMLView(htmlContent: html)
-                .frame(minHeight: 300)
+            ProblemHTMLView(
+                htmlContent: html,
+                colorScheme: themeManager.preferredColorScheme,
+                contentHeight: $problemHTMLHeight
+            )
+                .frame(height: max(problemHTMLHeight, 320))
         }
         .padding(Theme.Spacing.lg)
         .background(Theme.Colors.card)
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
     }
 
-    // MARK: - Submissions Section
+    private var hintsSection: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            sectionTitle("Hints")
+            ForEach(Array(viewModel.generatedHints.enumerated()), id: \.offset) { index, hint in
+                HStack(alignment: .top, spacing: Theme.Spacing.md) {
+                    Text("\(index + 1)")
+                        .font(.caption.bold())
+                        .foregroundStyle(Theme.Colors.background)
+                        .frame(width: 22, height: 22)
+                        .background(Theme.Colors.medium)
+                        .clipShape(Circle())
+
+                    Text(hint)
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.Colors.textSecondary)
+                }
+            }
+        }
+        .padding(Theme.Spacing.lg)
+        .background(Theme.Colors.card)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
+    }
+
+    private var editorialSection: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            sectionTitle("Editorial")
+
+            Text(viewModel.editorialSummary)
+                .font(.subheadline)
+                .foregroundStyle(Theme.Colors.textSecondary)
+
+            ForEach(viewModel.editorialChecklist, id: \.self) { item in
+                HStack(alignment: .top, spacing: Theme.Spacing.sm) {
+                    Image(systemName: "checkmark.seal.fill")
+                        .foregroundStyle(Theme.Colors.accent)
+                    Text(item)
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.Colors.text)
+                }
+            }
+
+            NavigationLink {
+                AuthenticatedBrowserPage(
+                    title: "Editorial",
+                    url: URL(string: "https://leetcode.com/problems/\(viewModel.titleSlug)/editorial/")!
+                )
+            } label: {
+                externalActionRow(
+                    title: "Open Editorial in Browser",
+                    subtitle: "Uses your LeetCode session when available.",
+                    tint: Theme.Colors.easy
+                )
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(Theme.Spacing.lg)
+        .background(Theme.Colors.card)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
+    }
+
+    private var communitySection: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            sectionTitle("Community")
+
+            ForEach(viewModel.communityHighlights) { item in
+                VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                    Text(item.title)
+                        .font(.subheadline.bold())
+                        .foregroundStyle(Theme.Colors.text)
+                    Text(item.body)
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.Colors.textSecondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(Theme.Spacing.md)
+                .background(Theme.Colors.background.opacity(0.7))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+
+            NavigationLink {
+                AuthenticatedBrowserPage(
+                    title: "Community",
+                    url: URL(string: "https://leetcode.com/problems/\(viewModel.titleSlug)/solutions/")!
+                )
+            } label: {
+                externalActionRow(
+                    title: "Open Community Solutions",
+                    subtitle: "Jump to discussion and solution posts.",
+                    tint: Theme.Colors.medium
+                )
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(Theme.Spacing.lg)
+        .background(Theme.Colors.card)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
+    }
+
+    private var similarSection: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            sectionTitle("Similar Questions")
+
+            ForEach(viewModel.similarQuestionShell) { item in
+                VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                    Text(item.title)
+                        .font(.subheadline.bold())
+                        .foregroundStyle(Theme.Colors.text)
+                    Text(item.subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.Colors.textSecondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(Theme.Spacing.md)
+                .background(Theme.Colors.background.opacity(0.7))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+        }
+        .padding(Theme.Spacing.lg)
+        .background(Theme.Colors.card)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
+    }
+
+    private func sectionTitle(_ title: String) -> some View {
+        Text(title)
+            .font(.headline)
+            .foregroundStyle(Theme.Colors.text)
+    }
+
+    private func placeholderSection(title: String, message: String) -> some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+            Text(title)
+                .font(.headline)
+                .foregroundStyle(Theme.Colors.text)
+            Text(message)
+                .font(.subheadline)
+                .foregroundStyle(Theme.Colors.textSecondary)
+        }
+        .padding(Theme.Spacing.lg)
+        .background(Theme.Colors.card)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
+    }
+
+    private func placeholderFootnote(_ text: String) -> some View {
+        Text(text)
+            .font(.caption)
+            .foregroundStyle(Theme.Colors.textSecondary)
+            .padding(.top, Theme.Spacing.xs)
+    }
+
+    private func externalActionRow(title: String, subtitle: String, tint: Color) -> some View {
+        HStack(spacing: Theme.Spacing.md) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                Text(title)
+                    .font(.subheadline.bold())
+                    .foregroundStyle(Theme.Colors.text)
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(Theme.Colors.textSecondary)
+            }
+
+            Spacer()
+
+            Image(systemName: "arrow.up.right.square.fill")
+                .foregroundStyle(tint)
+        }
+        .padding(Theme.Spacing.md)
+        .background(Theme.Colors.background.opacity(0.7))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func editorEntryRow(title: String, subtitle: String, tint: Color) -> some View {
+        HStack(spacing: Theme.Spacing.md) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                Text(title)
+                    .font(.subheadline.bold())
+                    .foregroundStyle(Theme.Colors.text)
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(Theme.Colors.textSecondary)
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right.circle.fill")
+                .font(.title3)
+                .foregroundStyle(tint)
+        }
+        .padding(Theme.Spacing.md)
+        .background(tint.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
 
     @ViewBuilder
     private var submissionsSection: some View {
@@ -193,10 +483,17 @@ struct ProblemDetailView: View {
                     .foregroundStyle(Theme.Colors.hard)
                     .padding(.vertical, Theme.Spacing.sm)
             } else if viewModel.submissions.isEmpty {
-                Text("No submissions yet")
-                    .font(.caption)
-                    .foregroundStyle(Theme.Colors.textSecondary)
-                    .padding(.vertical, Theme.Spacing.sm)
+                if authManager.isReadOnly || !authManager.hasLeetCodeSession {
+                    Text("Sign in with your LeetCode session to view private submission history.")
+                        .font(.caption)
+                        .foregroundStyle(Theme.Colors.textSecondary)
+                        .padding(.vertical, Theme.Spacing.sm)
+                } else {
+                    Text("No submissions yet")
+                        .font(.caption)
+                        .foregroundStyle(Theme.Colors.textSecondary)
+                        .padding(.vertical, Theme.Spacing.sm)
+                }
             } else {
                 ForEach(viewModel.submissions.prefix(5)) { submission in
                     NavigationLink {
@@ -232,8 +529,6 @@ struct ProblemDetailView: View {
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
     }
 
-    // MARK: - Error
-
     @ViewBuilder
     private func errorView(message: String) -> some View {
         VStack(spacing: Theme.Spacing.lg) {
@@ -265,8 +560,6 @@ struct ProblemDetailView: View {
         .padding(Theme.Spacing.xl)
     }
 }
-
-// MARK: - Submission Row
 
 struct SubmissionRow: View {
     let submission: Submission
@@ -322,10 +615,10 @@ struct SubmissionRow: View {
     }
 }
 
-// MARK: - HTML WebView for Problem Statement
-
 struct ProblemHTMLView: UIViewRepresentable {
     let htmlContent: String
+    let colorScheme: ColorScheme
+    @Binding var contentHeight: CGFloat
 
     func makeUIView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
@@ -340,26 +633,38 @@ struct ProblemHTMLView: UIViewRepresentable {
     }
 
     func updateUIView(_ webView: WKWebView, context: Context) {
+        context.coordinator.contentHeight = $contentHeight
         loadHTML(in: webView)
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator()
+        Coordinator(contentHeight: $contentHeight)
     }
 
     private func loadHTML(in webView: WKWebView) {
-        let styledHTML = """
+        let styledHTML = makeStyledHTML()
+        guard webView.url == nil || webView.isLoading || webView.tag != styledHTML.hashValue else {
+            return
+        }
+        webView.tag = styledHTML.hashValue
+        webView.loadHTMLString(styledHTML, baseURL: nil)
+    }
+
+    private func makeStyledHTML() -> String {
+        let palette = HTMLPalette(colorScheme: colorScheme)
+        return """
         <!DOCTYPE html>
         <html>
         <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+        <meta name="color-scheme" content="light dark">
         <style>
             * { box-sizing: border-box; }
             body {
                 font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
                 font-size: 15px;
                 line-height: 1.6;
-                color: #CDD6F4;
+                color: \(palette.text);
                 background-color: transparent;
                 margin: 0;
                 padding: 0;
@@ -368,9 +673,9 @@ struct ProblemHTMLView: UIViewRepresentable {
             pre, code {
                 font-family: 'SF Mono', 'Menlo', 'Courier New', monospace;
                 font-size: 13px;
-                background-color: #1E1E2E;
+                background-color: \(palette.codeBackground);
                 border-radius: 6px;
-                color: #CDD6F4;
+                color: \(palette.text);
             }
             pre {
                 padding: 12px;
@@ -384,9 +689,9 @@ struct ProblemHTMLView: UIViewRepresentable {
                 padding: 0;
                 background: none;
             }
-            strong, b { color: #CDD6F4; }
-            em, i { color: #A6ADC8; }
-            a { color: #89B4FA; text-decoration: none; }
+            strong, b { color: \(palette.text); }
+            em, i { color: \(palette.secondaryText); }
+            a { color: \(palette.link); text-decoration: none; }
             img { max-width: 100%; height: auto; border-radius: 8px; }
             ul, ol { padding-left: 20px; }
             li { margin-bottom: 4px; }
@@ -397,13 +702,13 @@ struct ProblemHTMLView: UIViewRepresentable {
                 margin: 8px 0;
             }
             th, td {
-                border: 1px solid #45475A;
+                border: 1px solid \(palette.border);
                 padding: 6px 10px;
                 text-align: left;
             }
             th {
-                background-color: #1E1E2E;
-                color: #89B4FA;
+                background-color: \(palette.codeBackground);
+                color: \(palette.link);
             }
             sup { font-size: 0.75em; }
             sub { font-size: 0.75em; }
@@ -412,16 +717,21 @@ struct ProblemHTMLView: UIViewRepresentable {
         <body>\(htmlContent)</body>
         </html>
         """
-        webView.loadHTMLString(styledHTML, baseURL: nil)
     }
 
+    @MainActor
     final class Coordinator: NSObject, WKNavigationDelegate {
+        var contentHeight: Binding<CGFloat>
+
+        init(contentHeight: Binding<CGFloat>) {
+            self.contentHeight = contentHeight
+        }
+
         func webView(
             _ webView: WKWebView,
             decidePolicyFor navigationAction: WKNavigationAction,
             decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
         ) {
-            // Allow initial load, open external links in Safari
             if navigationAction.navigationType == .linkActivated,
                let url = navigationAction.request.url {
                 Task { @MainActor in
@@ -432,6 +742,60 @@ struct ProblemHTMLView: UIViewRepresentable {
                 decisionHandler(.allow)
             }
         }
+
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            webView.evaluateJavaScript(
+                "Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);"
+            ) { [weak self] result, _ in
+                guard let self else { return }
+
+                let measuredHeight: CGFloat?
+                if let height = result as? CGFloat {
+                    measuredHeight = height
+                } else if let height = result as? Double {
+                    measuredHeight = height
+                } else if let height = result as? Int {
+                    measuredHeight = CGFloat(height)
+                } else {
+                    measuredHeight = nil
+                }
+
+                guard let measuredHeight, measuredHeight > 0 else { return }
+                Task { @MainActor in
+                    self.contentHeight.wrappedValue = measuredHeight
+                }
+            }
+        }
     }
 }
 
+private struct HTMLPalette {
+    let text: String
+    let secondaryText: String
+    let link: String
+    let codeBackground: String
+    let border: String
+
+    init(colorScheme: ColorScheme) {
+        switch colorScheme {
+        case .light:
+            text = "#1F2937"
+            secondaryText = "#64748B"
+            link = "#2563EB"
+            codeBackground = "#E2E8F0"
+            border = "#CBD5E1"
+        case .dark:
+            text = "#CDD6F4"
+            secondaryText = "#A6ADC8"
+            link = "#89B4FA"
+            codeBackground = "#1E1E2E"
+            border = "#45475A"
+        @unknown default:
+            text = "#1F2937"
+            secondaryText = "#64748B"
+            link = "#2563EB"
+            codeBackground = "#E2E8F0"
+            border = "#CBD5E1"
+        }
+    }
+}

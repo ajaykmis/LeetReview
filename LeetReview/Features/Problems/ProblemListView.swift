@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ProblemListView: View {
+    @Environment(ThemeManager.self) private var themeManager
     @State private var viewModel = ProblemListViewModel()
     @State private var showFilters = false
 
@@ -22,7 +23,7 @@ struct ProblemListView: View {
                 }
             }
             .navigationTitle("Problems")
-            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarColorScheme(themeManager.toolbarColorScheme, for: .navigationBar)
             .searchable(
                 text: $viewModel.searchText,
                 prompt: "Search problems..."
@@ -97,7 +98,12 @@ struct ProblemListView: View {
                 .padding(.top, Theme.Spacing.sm)
 
                 ForEach(viewModel.problems) { problem in
-                    NavigationLink(value: problem.titleSlug) {
+                    NavigationLink {
+                        ProblemDetailView(
+                            titleSlug: problem.titleSlug,
+                            title: problem.title
+                        )
+                    } label: {
                         ProblemRow(problem: problem)
                     }
                     .buttonStyle(.plain)

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(AuthManager.self) private var authManager
-    @State private var isDarkMode = true
+    @Environment(ThemeManager.self) private var themeManager
     @State private var showingLogoutConfirmation = false
     @State private var showingClearCacheConfirmation = false
     @State private var cacheCleared = false
@@ -22,7 +22,7 @@ struct SettingsView: View {
                 .listStyle(.insetGrouped)
             }
             .navigationTitle("Settings")
-            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarColorScheme(themeManager.toolbarColorScheme, for: .navigationBar)
         }
     }
 
@@ -30,7 +30,10 @@ struct SettingsView: View {
 
     private var appearanceSection: some View {
         Section {
-            Toggle(isOn: $isDarkMode) {
+            Toggle(isOn: Binding(
+                get: { themeManager.isDarkModeEnabled },
+                set: { themeManager.isDarkModeEnabled = $0 }
+            )) {
                 Label {
                     Text("Dark Mode")
                         .foregroundStyle(Theme.Colors.text)
@@ -181,7 +184,7 @@ struct SettingsView: View {
             .listStyle(.insetGrouped)
         }
         .navigationTitle("Licenses")
-        .toolbarColorScheme(.dark, for: .navigationBar)
+        .toolbarColorScheme(themeManager.toolbarColorScheme, for: .navigationBar)
     }
 
     private func licenseRow(name: String, url: String, license: String) -> some View {
