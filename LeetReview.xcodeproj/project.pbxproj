@@ -64,6 +64,7 @@
 		DFDFA2000726E5D26A30F86A /* ProblemListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D5DC6FFC7C4900947B6722 /* ProblemListView.swift */; };
 		EA71EBDB6C72CCA3D67A6075 /* CodeEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FEFD22D4EE912FCBB1506BB /* CodeEditorView.swift */; };
 		F5058A8F61A4B823ECE33620 /* ProblemTimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF65F4B3468FCF7B6B082DD3 /* ProblemTimerView.swift */; };
+		F6A1B2C3D4E5F60718293A4B /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6071829304A5B /* FlowLayout.swift */; };
 		F73DC9C79533AF87B5475764 /* CodeBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA146C1E1B39DEC97616F684 /* CodeBlock.swift */; };
 		F74D959ECE07FDF36DFC6CE0 /* ReviewStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1628A4B24323EE892CA00F35 /* ReviewStore.swift */; };
 		F9D657467589649241E88A0A /* ProblemDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69F26F3D1BD169DE482DF2E3 /* ProblemDetailViewModel.swift */; };
@@ -106,6 +107,7 @@
 		5C32FE30525559A647A71D0D /* ProblemRatingStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LeetReview/Core/Storage/ProblemRatingStore.swift; sourceTree = SOURCE_ROOT; };
 		5F548ECB3EDD422B43D5EA35 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		69F26F3D1BD169DE482DF2E3 /* ProblemDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProblemDetailViewModel.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6071829304A5B /* FlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowLayout.swift; sourceTree = "<group>"; };
 		6CA8423074EB607C578986B4 /* DailyChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallenge.swift; sourceTree = "<group>"; };
 		70D0DA884F7C5005BB66F7AE /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		77AEF482250D75873E164A23 /* SubmissionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubmissionListView.swift; sourceTree = "<group>"; };
@@ -313,6 +315,7 @@
 				9C76BB70A5F07F9CBD6C633A /* AuthenticatedWebView.swift */,
 				CA146C1E1B39DEC97616F684 /* CodeBlock.swift */,
 				EBBAF57197388029504419E6 /* DifficultyBadge.swift */,
+				A1B2C3D4E5F6071829304A5B /* FlowLayout.swift */,
 				583F3D3A15DD58C928246F98 /* StatCard.swift */,
 				EAF0F580FC9CF85A725E5A01 /* OfflineBanner.swift */,
 				848B4AB77A2F333A51113D86 /* RatingBadge.swift */,
@@ -544,6 +547,7 @@
 				944D52D759BB44C86DACBEC1 /* DashboardViewModel.swift in Sources */,
 				BCF27FA388B49649B5DA90D3 /* Date+Relative.swift in Sources */,
 				33B2DC91300137F6BFDB7B67 /* DifficultyBadge.swift in Sources */,
+				F6A1B2C3D4E5F60718293A4B /* FlowLayout.swift in Sources */,
 				AEBAB7AA1FBC526514F1ED02 /* GraphQLQueries.swift in Sources */,
 				527CA9B025E55167A416B9E6 /* LeetCodeAPI.swift in Sources */,
 				BB30E80396C4A6F0E006194C /* LeetReviewApp.swift in Sources */,

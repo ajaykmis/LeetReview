@@ -7,7 +7,28 @@ struct ReviewCardView: View {
     let code: String?
     let language: String?
     let errorMessage: String?
+    let intervalPreviews: [ReviewQuality: String]
     let onShowSolution: () -> Void
+
+    init(
+        item: ReviewItem,
+        isFlipped: Bool,
+        isLoadingCode: Bool,
+        code: String?,
+        language: String?,
+        errorMessage: String?,
+        intervalPreviews: [ReviewQuality: String] = [:],
+        onShowSolution: @escaping () -> Void
+    ) {
+        self.item = item
+        self.isFlipped = isFlipped
+        self.isLoadingCode = isLoadingCode
+        self.code = code
+        self.language = language
+        self.errorMessage = errorMessage
+        self.intervalPreviews = intervalPreviews
+        self.onShowSolution = onShowSolution
+    }
 
     var body: some View {
         ZStack {
@@ -45,6 +66,13 @@ struct ReviewCardView: View {
                 reviewStat(label: "Reps", value: "\(item.repetitions)")
             }
             .padding(.top, Theme.Spacing.md)
+
+            // Last reviewed
+            if item.repetitions > 0 {
+                Text("Last reviewed \(lastReviewedString)")
+                    .font(.caption)
+                    .foregroundStyle(Theme.Colors.textSecondary)
+            }
 
             Spacer()
 
@@ -184,6 +212,21 @@ struct ReviewCardView: View {
         }
     }
 
+    private var lastReviewedString: String {
+        // The last review was approximately (interval) days before nextReviewDate
+        let lastReview = item.nextReviewDate.addingTimeInterval(-item.interval * 86400)
+        let elapsed = Date.now.timeIntervalSince(lastReview)
+        if elapsed < 3600 {
+            return "just now"
+        } else if elapsed < 86400 {
+            let hours = Int(elapsed / 3600)
+            return "\(hours)h ago"
+        } else {
+            let days = Int(elapsed / 86400)
+            return "\(days)d ago"
+        }
+    }
+
     private func reviewStat(label: String, value: String) -> some View {
         VStack(spacing: Theme.Spacing.xs) {
             Text(value)
@@ -206,6 +249,61 @@ struct ReviewCardView: View {
         } else {
             let years = interval / 365.0
             return String(format: "%.1fy", years)
+        }
+    }
+}
+
+// MARK: - Session Rating Buttons (extracted for use in ReviewSessionView)
+
+struct SessionRatingButtons: View {
+    let item: ReviewItem
+    let intervalPreviews: [ReviewQuality: String]
+    let onRate: (ReviewQuality) -> Void
+
+    var body: some View {
+        VStack(spacing: Theme.Spacing.sm) {
+            Text("How well did you recall?")
+                .font(.subheadline)
+                .foregroundStyle(Theme.Colors.textSecondary)
+
+            HStack(spacing: Theme.Spacing.sm) {
+                ForEach(ReviewQuality.allCases, id: \.rawValue) { quality in
+                    ratingButton(quality: quality)
+                }
+            }
+            .padding(.horizontal, Theme.Spacing.lg)
+        }
+        .padding(.bottom, Theme.Spacing.md)
+    }
+
+    private func ratingButton(quality: ReviewQuality) -> some View {
+        Button {
+            onRate(quality)
+        } label: {
+            VStack(spacing: Theme.Spacing.xs) {
+                Text(quality.label)
+                    .font(.subheadline.bold())
+
+                if let preview = intervalPreviews[quality] {
+                    Text(preview)
+                        .font(.caption2)
+                        .foregroundStyle(ratingColor(quality).opacity(0.7))
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, Theme.Spacing.md)
+            .foregroundStyle(ratingColor(quality))
+            .background(ratingColor(quality).opacity(0.15))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+
+    private func ratingColor(_ quality: ReviewQuality) -> Color {
+        switch quality {
+        case .again: Theme.Colors.hard
+        case .hard: Theme.Colors.medium
+        case .good: Theme.Colors.accent
+        case .easy: Theme.Colors.easy
         }
     }
 }

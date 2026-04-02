@@ -249,10 +249,10 @@ struct ProblemDetailView: View {
                         Text(tag.name)
                             .font(.caption)
                             .foregroundStyle(Theme.Colors.accent)
-                            .padding(.horizontal, Theme.Spacing.sm)
+                            .padding(.horizontal, Theme.Spacing.md)
                             .padding(.vertical, Theme.Spacing.xs)
                             .background(Theme.Colors.accent.opacity(0.12))
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .clipShape(Capsule())
                     }
                 }
             }
