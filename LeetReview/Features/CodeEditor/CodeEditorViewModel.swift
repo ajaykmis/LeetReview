@@ -6,15 +6,24 @@ import Observation
 final class CodeEditorViewModel {
     let problem: CodeEditorProblemSnapshot
 
+    private static let preferredLanguageKey = "editor_preferred_language"
+
     var selectedLanguageSlug: String {
         didSet {
             guard oldValue != selectedLanguageSlug else { return }
-            persistCurrentDraft(for: oldValue)
+            saveDraftToDisk(for: oldValue)
             loadDraft(for: selectedLanguageSlug)
+            // Remember language preference
+            UserDefaults.standard.set(selectedLanguageSlug, forKey: Self.preferredLanguageKey)
         }
     }
 
-    var code: String
+    var code: String {
+        didSet {
+            // Auto-save draft on every change (debounced by SwiftUI update cycle)
+            draftsByLanguageSlug[selectedLanguageSlug] = code
+        }
+    }
     var testCases: [CodeEditorTestCase]
 
     private(set) var runResult: CodeExecutionResult?
@@ -32,15 +41,45 @@ final class CodeEditorViewModel {
     ) {
         self.problem = problem
         self.service = service
-        self.selectedLanguageSlug = problem.defaultLanguageSlug
         self.testCases = problem.initialTestCases
 
-        let defaultCode = problem.starterCodes.first(where: {
-            $0.languageSlug == problem.defaultLanguageSlug
-        })?.code ?? problem.starterCodes.first?.code ?? ""
+        // Use preferred language if available and supported, otherwise default
+        let preferred = UserDefaults.standard.string(forKey: Self.preferredLanguageKey)
+        let languageSlug: String
+        if let preferred, problem.starterCodes.contains(where: { $0.languageSlug == preferred }) {
+            languageSlug = preferred
+        } else {
+            languageSlug = problem.defaultLanguageSlug
+        }
+        self.selectedLanguageSlug = languageSlug
 
-        self.code = defaultCode
-        self.draftsByLanguageSlug[problem.defaultLanguageSlug] = defaultCode
+        // Try to load saved draft from disk, fall back to starter code
+        let draftKey = Self.draftCacheKey(titleSlug: problem.titleSlug, language: languageSlug)
+        if let savedDraft = UserDefaults.standard.string(forKey: draftKey), !savedDraft.isEmpty {
+            self.code = savedDraft
+            self.draftsByLanguageSlug[languageSlug] = savedDraft
+        } else {
+            let starterCode = problem.starterCodes.first(where: {
+                $0.languageSlug == languageSlug
+            })?.code ?? problem.starterCodes.first?.code ?? ""
+            self.code = starterCode
+            self.draftsByLanguageSlug[languageSlug] = starterCode
+        }
+    }
+
+    /// Save drafts to disk when editor is dismissed
+    func saveDraftsOnDismiss() {
+        saveDraftToDisk(for: selectedLanguageSlug)
+    }
+
+    private static func draftCacheKey(titleSlug: String, language: String) -> String {
+        "editor_draft_\(titleSlug)_\(language)"
+    }
+
+    private func saveDraftToDisk(for language: String) {
+        guard let draft = draftsByLanguageSlug[language] else { return }
+        let key = Self.draftCacheKey(titleSlug: problem.titleSlug, language: language)
+        UserDefaults.standard.set(draft, forKey: key)
     }
 
     var selectedLanguage: CodeEditorStarterCode? {
@@ -226,11 +265,20 @@ final class CodeEditorViewModel {
 
     private func persistCurrentDraft(for languageSlug: String) {
         draftsByLanguageSlug[languageSlug] = code
+        saveDraftToDisk(for: languageSlug)
     }
 
     private func loadDraft(for languageSlug: String) {
         if let existingDraft = draftsByLanguageSlug[languageSlug] {
             code = existingDraft
+            return
+        }
+
+        // Try loading from disk
+        let key = Self.draftCacheKey(titleSlug: problem.titleSlug, language: languageSlug)
+        if let saved = UserDefaults.standard.string(forKey: key), !saved.isEmpty {
+            code = saved
+            draftsByLanguageSlug[languageSlug] = saved
             return
         }
 

@@ -21,8 +21,8 @@ struct CodeEditorView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Language selector bar
-            languageBar
+            // Top bar: action icons + language picker
+            editorTopBar
 
             Divider().background(Theme.Colors.textSecondary.opacity(0.2))
 
@@ -41,36 +41,8 @@ struct CodeEditorView: View {
         .navigationTitle(viewModel.problem.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(Theme.Colors.background, for: .navigationBar)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                HStack(spacing: Theme.Spacing.md) {
-                    Button {
-                        UIPasteboard.general.string = viewModel.code
-                        viewModel.copyCurrentCode()
-                    } label: {
-                        Image(systemName: "doc.on.doc")
-                            .font(.caption)
-                            .foregroundStyle(Theme.Colors.accent)
-                    }
-
-                    Button {
-                        viewModel.resetCurrentDraft()
-                    } label: {
-                        Image(systemName: "arrow.counterclockwise")
-                            .font(.caption)
-                            .foregroundStyle(Theme.Colors.medium)
-                    }
-
-                    Button {
-                        Task { await viewModel.loadPreviousSubmission() }
-                    } label: {
-                        Image(systemName: "clock.arrow.circlepath")
-                            .font(.caption)
-                            .foregroundStyle(Theme.Colors.textSecondary)
-                    }
-                    .disabled(viewModel.isLoadingPrevious)
-                }
-            }
+        .onDisappear {
+            viewModel.saveDraftsOnDismiss()
         }
         .alert("Editor Message", isPresented: Binding(
             get: { viewModel.inlineMessage != nil },
@@ -103,39 +75,70 @@ struct CodeEditorView: View {
         }
     }
 
-    // MARK: - Language Bar
+    // MARK: - Editor Top Bar
 
-    private var languageBar: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: Theme.Spacing.sm) {
-                DifficultyBadge(difficulty: viewModel.problem.difficulty)
+    private var editorTopBar: some View {
+        HStack(spacing: Theme.Spacing.sm) {
+            // Action icons — prominent, labeled
+            editorIconButton(icon: "arrow.counterclockwise", label: "Reset", color: Theme.Colors.medium) {
+                viewModel.resetCurrentDraft()
+            }
 
+            editorIconButton(icon: "clock.arrow.circlepath", label: "Restore", color: Theme.Colors.accent) {
+                Task { await viewModel.loadPreviousSubmission() }
+            }
+
+            editorIconButton(icon: "doc.on.doc", label: "Copy", color: Theme.Colors.textSecondary) {
+                UIPasteboard.general.string = viewModel.code
+                viewModel.copyCurrentCode()
+            }
+
+            Spacer()
+
+            // Language dropdown picker
+            Menu {
                 ForEach(viewModel.availableLanguages) { language in
                     Button {
                         viewModel.selectLanguage(language.languageSlug)
                     } label: {
-                        Text(language.languageName)
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(
-                                viewModel.selectedLanguageSlug == language.languageSlug
-                                ? Theme.Colors.background
-                                : Theme.Colors.accent
-                            )
-                            .padding(.horizontal, Theme.Spacing.md)
-                            .padding(.vertical, Theme.Spacing.xs)
-                            .background(
-                                viewModel.selectedLanguageSlug == language.languageSlug
-                                ? Theme.Colors.accent
-                                : Theme.Colors.accent.opacity(0.12)
-                            )
-                            .clipShape(Capsule())
+                        HStack {
+                            Text(language.languageName)
+                            if viewModel.selectedLanguageSlug == language.languageSlug {
+                                Image(systemName: "checkmark")
+                            }
+                        }
                     }
                 }
+            } label: {
+                HStack(spacing: Theme.Spacing.xs) {
+                    Text(viewModel.selectedLanguage?.languageName ?? "Language")
+                        .font(.caption.weight(.semibold))
+                    Image(systemName: "chevron.down")
+                        .font(.caption2)
+                }
+                .foregroundStyle(Theme.Colors.background)
+                .padding(.horizontal, Theme.Spacing.md)
+                .padding(.vertical, Theme.Spacing.sm)
+                .background(Theme.Colors.accent)
+                .clipShape(Capsule())
             }
-            .padding(.horizontal, Theme.Spacing.md)
-            .padding(.vertical, Theme.Spacing.sm)
         }
+        .padding(.horizontal, Theme.Spacing.md)
+        .padding(.vertical, Theme.Spacing.sm)
         .background(Theme.Colors.card)
+    }
+
+    private func editorIconButton(icon: String, label: String, color: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 2) {
+                Image(systemName: icon)
+                    .font(.system(size: 16))
+                Text(label)
+                    .font(.system(size: 9, weight: .medium))
+            }
+            .foregroundStyle(color)
+            .frame(width: 44)
+        }
     }
 
     // MARK: - Bottom Action Bar
