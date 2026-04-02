@@ -7,10 +7,13 @@ protocol CodeEditorServicing: Sendable {
 
 struct LiveCodeEditorService: CodeEditorServicing {
     func runCode(_ request: CodeExecutionRequest) async throws -> CodeExecutionResult {
-        guard AuthManager.hasSessionCredentials() else {
+        let hasSession = AuthManager.hasSessionCredentials()
+        let sessionLen = AuthManager.getSessionCookie()?.count ?? 0
+        let csrfLen = AuthManager.getCSRFToken()?.count ?? 0
+        guard hasSession else {
             return CodeExecutionResult(
                 status: .blocked,
-                statusMessage: "Sign in with a LeetCode session to run code on LeetCode.",
+                statusMessage: "No LeetCode session found (session: \(sessionLen) chars, csrf: \(csrfLen) chars). Please log out and sign in again with LeetCode.",
                 completedCaseCount: 0,
                 totalCaseCount: request.testCases.count,
                 testCaseResults: [],
