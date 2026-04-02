@@ -7,21 +7,47 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		07D2E45E2B4DDD747E87E432 /* MockCodeEditorServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 229AE6EA4E81090E5403034F /* MockCodeEditorServiceTests.swift */; };
+		0AB5936B9A1BB917BD5B90A7 /* ProblemNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2749DCC59FF4AA5EDE325936 /* ProblemNote.swift */; };
+		1178A20166C90600A544701F /* CodeEditorModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE22FE6ABA9E25F9303EB48 /* CodeEditorModels.swift */; };
+		18139D3FADB455AF0105F67F /* CodeEditorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FB10B2E559234FF09B84CD7 /* CodeEditorService.swift */; };
+		1861BA264DCA5F5F55BFCA01 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 351D2AC1C9003047DAABEC5F /* FirebaseMessaging */; };
 		200851B70A4FC0E8AEEFC70E /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70D0DA884F7C5005BB66F7AE /* DashboardView.swift */; };
+		23B52C648BE537E14965C53A /* ActionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3CF10F4A54853592F2B56D /* ActionCard.swift */; };
+		26E15C30C8C15F40725E65D3 /* BookmarksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D0EFB75CB61F22313E7C789 /* BookmarksView.swift */; };
+		2AAE2A8F011C0E5FD51C5AC4 /* ProblemRatingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C32FE30525559A647A71D0D /* ProblemRatingStore.swift */; };
 		2EA137A45297BACA4EB80EE2 /* ProblemListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF3C262325764529F08CC0B5 /* ProblemListViewModel.swift */; };
 		33B2DC91300137F6BFDB7B67 /* DifficultyBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBBAF57197388029504419E6 /* DifficultyBadge.swift */; };
+		36FD4374D2372109943348FE /* StoreManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1246503DD8E83B5B9965B284 /* StoreManagerTests.swift */; };
+		396685A478BB53523CB112B8 /* AdBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18F6485DB09346F638B20D76 /* AdBannerView.swift */; };
+		39F6A6250E83FE4BC640C527 /* OfflineBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAF0F580FC9CF85A725E5A01 /* OfflineBanner.swift */; };
+		3BEB169BFE790373290A00EB /* ContestListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC5DB7FC814F9E843FA0A09 /* ContestListView.swift */; };
+		3BFBD80857D6D7B194E3A8FF /* CacheManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F377D57B1957D2FC4F99ADDA /* CacheManagerTests.swift */; };
+		3F78895B8E91D3DB2CAD87A8 /* CodeEditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97839B1F90BA661ED82CFAF /* CodeEditorViewModel.swift */; };
 		4013310DB66CD36E39108709 /* ProblemFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5BFB432A140E3CAA7DAAB69 /* ProblemFilterView.swift */; };
+		40A16C7630CE15936F319897 /* ContestReminderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 415BE048254AFDBAD329A6DF /* ContestReminderService.swift */; };
+		41519A5C3A56B744EC4D24A9 /* NoteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9194B09A6F0AB1CF24DA85FD /* NoteStore.swift */; };
 		441AEEAD645914A1A580DE0C /* ReviewCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1776E9F09A8C7BA053D668F0 /* ReviewCardView.swift */; };
 		527CA9B025E55167A416B9E6 /* LeetCodeAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D32E23CC7D08150130C2057 /* LeetCodeAPI.swift */; };
 		54398753CE9DF1E3EA800570 /* SubmissionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77AEF482250D75873E164A23 /* SubmissionListView.swift */; };
+		5B5F6CBD023B67AE0D9E991D /* CodeEditorModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5145E53E3C0046904706E13 /* CodeEditorModelsTests.swift */; };
+		5C85033F2E1E22ADD0DEDDDE /* SM2AlgorithmTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA5533A53490BFAB91CF921 /* SM2AlgorithmTests.swift */; };
 		621D6F2F5AC801953CA005EE /* ReviewSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BC227B233E7C80540520890 /* ReviewSessionView.swift */; };
+		63F49884439F12DFA862FE10 /* HighlightedCodeEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB51832F3874303EAFB1DACA /* HighlightedCodeEditor.swift */; };
 		778FE424BDFDB0559237B352 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F0069EE9C3CE69280CF81BB /* AuthManager.swift */; };
+		7B4E3D0C53ACD75D7A971F6A /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 83C30EC2A045A362DAB0B46D /* FirebaseAuth */; };
 		7EC67652FE7303508A9A5A21 /* ReviewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A81673365F010A0AD3BA97 /* ReviewViewModel.swift */; };
 		803121FE37254C4FDCD3B0E4 /* DailyChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CA8423074EB607C578986B4 /* DailyChallenge.swift */; };
+		809A063F261BA005F98E6C1B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FBB89814F5DB692DB9BF945B /* Assets.xcassets */; };
 		8BBC0716193727BE102096FC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3629885D409F1EDD9F5F03C5 /* ContentView.swift */; };
+		935B8D5E61F69CFC5F28612B /* AuthenticatedWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C76BB70A5F07F9CBD6C633A /* AuthenticatedWebView.swift */; };
+		93978FEF1C534C8575532806 /* ProblemTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8B819DFE850FBE38D98B2E4 /* ProblemTimer.swift */; };
 		944D52D759BB44C86DACBEC1 /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37B600B36AE60257CEBF8267 /* DashboardViewModel.swift */; };
 		99AE7EF4901A1DCE3CAED13E /* StatCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 583F3D3A15DD58C928246F98 /* StatCard.swift */; };
+		9A88870FA50C3BCEAB555120 /* TimerStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAF77F944C46465D0D9153A6 /* TimerStore.swift */; };
+		A302E69847E85E508D30B108 /* OfflineManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C2DC314D6FFCF9204B489C7 /* OfflineManager.swift */; };
 		AC21A0CC398919ED41A27BD1 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FADC627B2130CBCD344D3BD7 /* SettingsView.swift */; };
+		ACA9EA034443616E7C165387 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A755744FD2182D89108AB7DE /* GoogleService-Info.plist */; };
 		AEBAB7AA1FBC526514F1ED02 /* GraphQLQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = E34FCF7485814D4312D838D5 /* GraphQLQueries.swift */; };
 		B92F109BFC3482C1604B4D73 /* ProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A15C4CAA8E2A74889168F43D /* ProfileViewModel.swift */; };
 		BB30E80396C4A6F0E006194C /* LeetReviewApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CFFEE765BFC60FC1F909395 /* LeetReviewApp.swift */; };
@@ -32,55 +58,109 @@
 		C75E41C8333689D339A2F62E /* Color+Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2885203532B62F05D069E3A /* Color+Theme.swift */; };
 		CC0476816B11CE48E24B1FFA /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = BC29B4521F9F153944EC7F4E /* KeychainAccess */; };
 		CC9A1C58FBED1C6D25A164EE /* LoginWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BABBFBA155BA87A89648F6E /* LoginWebView.swift */; };
+		CCD467DA038EB74E888AA008 /* RatingBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848B4AB77A2F333A51113D86 /* RatingBadge.swift */; };
 		D0205B4E9D96EA05A52CFD07 /* ProblemDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EE8794ECD0ED8332E04C146 /* ProblemDetailView.swift */; };
 		DB82BF7F6C817EB1D290D770 /* CacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2257A6C50D838CD11153A12F /* CacheManager.swift */; };
 		DFDFA2000726E5D26A30F86A /* ProblemListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D5DC6FFC7C4900947B6722 /* ProblemListView.swift */; };
+		EA71EBDB6C72CCA3D67A6075 /* CodeEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FEFD22D4EE912FCBB1506BB /* CodeEditorView.swift */; };
+		F5058A8F61A4B823ECE33620 /* ProblemTimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF65F4B3468FCF7B6B082DD3 /* ProblemTimerView.swift */; };
+		F6A1B2C3D4E5F60718293A4B /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6071829304A5B /* FlowLayout.swift */; };
 		F73DC9C79533AF87B5475764 /* CodeBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA146C1E1B39DEC97616F684 /* CodeBlock.swift */; };
 		F74D959ECE07FDF36DFC6CE0 /* ReviewStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1628A4B24323EE892CA00F35 /* ReviewStore.swift */; };
 		F9D657467589649241E88A0A /* ProblemDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69F26F3D1BD169DE482DF2E3 /* ProblemDetailViewModel.swift */; };
+		FE4184E69B4EAE080839BC52 /* StoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16F3233F6C02465CCFF7ED9 /* StoreManager.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		78CD192E5BFD5D30BA56EE1A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 07FCA19CC68C687025848811 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BD9C121A89A4F51A772CB722;
+			remoteInfo = LeetReview;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		0AC5DB7FC814F9E843FA0A09 /* ContestListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContestListView.swift; sourceTree = "<group>"; };
+		0FEFD22D4EE912FCBB1506BB /* CodeEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeEditorView.swift; sourceTree = "<group>"; };
+		1246503DD8E83B5B9965B284 /* StoreManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreManagerTests.swift; sourceTree = "<group>"; };
 		1628A4B24323EE892CA00F35 /* ReviewStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewStore.swift; sourceTree = "<group>"; };
 		1776E9F09A8C7BA053D668F0 /* ReviewCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewCardView.swift; sourceTree = "<group>"; };
+		18F6485DB09346F638B20D76 /* AdBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AdBannerView.swift; path = LeetReview/Core/Store/AdBannerView.swift; sourceTree = SOURCE_ROOT; };
 		1BC227B233E7C80540520890 /* ReviewSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewSessionView.swift; sourceTree = "<group>"; };
+		1D0EFB75CB61F22313E7C789 /* BookmarksView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LeetReview/Features/Bookmarks/BookmarksView.swift; sourceTree = SOURCE_ROOT; };
 		1F0069EE9C3CE69280CF81BB /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
 		2257A6C50D838CD11153A12F /* CacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheManager.swift; sourceTree = "<group>"; };
+		229AE6EA4E81090E5403034F /* MockCodeEditorServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockCodeEditorServiceTests.swift; sourceTree = "<group>"; };
+		2749DCC59FF4AA5EDE325936 /* ProblemNote.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LeetReview/Core/Storage/ProblemNote.swift; sourceTree = SOURCE_ROOT; };
 		296551FA7A866294B4DF8B62 /* CodeViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeViewerView.swift; sourceTree = "<group>"; };
 		2BABBFBA155BA87A89648F6E /* LoginWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginWebView.swift; sourceTree = "<group>"; };
+		2FB10B2E559234FF09B84CD7 /* CodeEditorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeEditorService.swift; sourceTree = "<group>"; };
 		3629885D409F1EDD9F5F03C5 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		37B600B36AE60257CEBF8267 /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
+		415BE048254AFDBAD329A6DF /* ContestReminderService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LeetReview/Core/Services/ContestReminderService.swift; sourceTree = SOURCE_ROOT; };
 		4CFFEE765BFC60FC1F909395 /* LeetReviewApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeetReviewApp.swift; sourceTree = "<group>"; };
 		4D32E23CC7D08150130C2057 /* LeetCodeAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeetCodeAPI.swift; sourceTree = "<group>"; };
 		583F3D3A15DD58C928246F98 /* StatCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatCard.swift; sourceTree = "<group>"; };
+		5C2DC314D6FFCF9204B489C7 /* OfflineManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OfflineManager.swift; sourceTree = "<group>"; };
+		5C32FE30525559A647A71D0D /* ProblemRatingStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LeetReview/Core/Storage/ProblemRatingStore.swift; sourceTree = SOURCE_ROOT; };
 		5F548ECB3EDD422B43D5EA35 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		69F26F3D1BD169DE482DF2E3 /* ProblemDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProblemDetailViewModel.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6071829304A5B /* FlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowLayout.swift; sourceTree = "<group>"; };
 		6CA8423074EB607C578986B4 /* DailyChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallenge.swift; sourceTree = "<group>"; };
 		70D0DA884F7C5005BB66F7AE /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		77AEF482250D75873E164A23 /* SubmissionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubmissionListView.swift; sourceTree = "<group>"; };
 		81D5DC6FFC7C4900947B6722 /* ProblemListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProblemListView.swift; sourceTree = "<group>"; };
+		848B4AB77A2F333A51113D86 /* RatingBadge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LeetReview/Shared/Components/RatingBadge.swift; sourceTree = SOURCE_ROOT; };
 		8EE8794ECD0ED8332E04C146 /* ProblemDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProblemDetailView.swift; sourceTree = "<group>"; };
+		9194B09A6F0AB1CF24DA85FD /* NoteStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LeetReview/Core/Storage/NoteStore.swift; sourceTree = SOURCE_ROOT; };
 		94793A8159A5A61A221F7008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		99BAD7D26CF4C2FB6A505ED0 /* LeetReviewTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LeetReviewTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		9C76BB70A5F07F9CBD6C633A /* AuthenticatedWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticatedWebView.swift; sourceTree = "<group>"; };
 		9D6FE5482B070FAC52A8EA6D /* LeetReview.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = LeetReview.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A15C4CAA8E2A74889168F43D /* ProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewModel.swift; sourceTree = "<group>"; };
 		A1F7529E171EB72BAA7B425D /* Date+Relative.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Relative.swift"; sourceTree = "<group>"; };
+		A755744FD2182D89108AB7DE /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		AE3CF10F4A54853592F2B56D /* ActionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionCard.swift; sourceTree = "<group>"; };
 		B2A81673365F010A0AD3BA97 /* ReviewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewViewModel.swift; sourceTree = "<group>"; };
 		CA146C1E1B39DEC97616F684 /* CodeBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeBlock.swift; sourceTree = "<group>"; };
+		CB51832F3874303EAFB1DACA /* HighlightedCodeEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightedCodeEditor.swift; sourceTree = "<group>"; };
+		D5145E53E3C0046904706E13 /* CodeEditorModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeEditorModelsTests.swift; sourceTree = "<group>"; };
 		D5BFB432A140E3CAA7DAAB69 /* ProblemFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProblemFilterView.swift; sourceTree = "<group>"; };
+		DEA5533A53490BFAB91CF921 /* SM2AlgorithmTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SM2AlgorithmTests.swift; sourceTree = "<group>"; };
 		E2885203532B62F05D069E3A /* Color+Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Theme.swift"; sourceTree = "<group>"; };
 		E34FCF7485814D4312D838D5 /* GraphQLQueries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphQLQueries.swift; sourceTree = "<group>"; };
+		E8B819DFE850FBE38D98B2E4 /* ProblemTimer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LeetReview/Core/Storage/ProblemTimer.swift; sourceTree = SOURCE_ROOT; };
+		E97839B1F90BA661ED82CFAF /* CodeEditorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeEditorViewModel.swift; sourceTree = "<group>"; };
+		EAF0F580FC9CF85A725E5A01 /* OfflineBanner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OfflineBanner.swift; sourceTree = "<group>"; };
+		EAF77F944C46465D0D9153A6 /* TimerStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LeetReview/Core/Storage/TimerStore.swift; sourceTree = SOURCE_ROOT; };
 		EBBAF57197388029504419E6 /* DifficultyBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DifficultyBadge.swift; sourceTree = "<group>"; };
+		EEE22FE6ABA9E25F9303EB48 /* CodeEditorModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeEditorModels.swift; sourceTree = "<group>"; };
+		F16F3233F6C02465CCFF7ED9 /* StoreManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StoreManager.swift; path = LeetReview/Core/Store/StoreManager.swift; sourceTree = SOURCE_ROOT; };
+		F377D57B1957D2FC4F99ADDA /* CacheManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheManagerTests.swift; sourceTree = "<group>"; };
 		FADC627B2130CBCD344D3BD7 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		FB6DB23936831C5B860458D6 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		FBB89814F5DB692DB9BF945B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = LeetReview/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		FF3C262325764529F08CC0B5 /* ProblemListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProblemListViewModel.swift; sourceTree = "<group>"; };
+		FF65F4B3468FCF7B6B082DD3 /* ProblemTimerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LeetReview/Features/ProblemDetail/ProblemTimerView.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		098C6FD0C5A631CF2D8301ED /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8A7159D2F48DAC9BFEF8D7ED /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				CC0476816B11CE48E24B1FFA /* KeychainAccess in Frameworks */,
+				7B4E3D0C53ACD75D7A971F6A /* FirebaseAuth in Frameworks */,
+				1861BA264DCA5F5F55BFCA01 /* FirebaseMessaging in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -94,8 +174,29 @@
 				8EE8794ECD0ED8332E04C146 /* ProblemDetailView.swift */,
 				69F26F3D1BD169DE482DF2E3 /* ProblemDetailViewModel.swift */,
 				77AEF482250D75873E164A23 /* SubmissionListView.swift */,
+				FF65F4B3468FCF7B6B082DD3 /* ProblemTimerView.swift */,
 			);
 			path = ProblemDetail;
+			sourceTree = "<group>";
+		};
+		25DD79B8C04A461CCF1D7F7B /* Bookmarks */ = {
+			isa = PBXGroup;
+			children = (
+				1D0EFB75CB61F22313E7C789 /* BookmarksView.swift */,
+			);
+			name = Bookmarks;
+			sourceTree = "<group>";
+		};
+		3543DBC140FADEA01BA5FEDF /* CodeEditor */ = {
+			isa = PBXGroup;
+			children = (
+				EEE22FE6ABA9E25F9303EB48 /* CodeEditorModels.swift */,
+				2FB10B2E559234FF09B84CD7 /* CodeEditorService.swift */,
+				0FEFD22D4EE912FCBB1506BB /* CodeEditorView.swift */,
+				CB51832F3874303EAFB1DACA /* HighlightedCodeEditor.swift */,
+				E97839B1F90BA661ED82CFAF /* CodeEditorViewModel.swift */,
+			);
+			path = CodeEditor;
 			sourceTree = "<group>";
 		};
 		3C28D9F243E625CA72B6A03D /* App */ = {
@@ -103,6 +204,7 @@
 			children = (
 				3629885D409F1EDD9F5F03C5 /* ContentView.swift */,
 				4CFFEE765BFC60FC1F909395 /* LeetReviewApp.swift */,
+				FBB89814F5DB692DB9BF945B /* Assets.xcassets */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -121,6 +223,12 @@
 			children = (
 				2257A6C50D838CD11153A12F /* CacheManager.swift */,
 				1628A4B24323EE892CA00F35 /* ReviewStore.swift */,
+				5C2DC314D6FFCF9204B489C7 /* OfflineManager.swift */,
+				9194B09A6F0AB1CF24DA85FD /* NoteStore.swift */,
+				2749DCC59FF4AA5EDE325936 /* ProblemNote.swift */,
+				5C32FE30525559A647A71D0D /* ProblemRatingStore.swift */,
+				E8B819DFE850FBE38D98B2E4 /* ProblemTimer.swift */,
+				EAF77F944C46465D0D9153A6 /* TimerStore.swift */,
 			);
 			path = Storage;
 			sourceTree = "<group>";
@@ -134,6 +242,15 @@
 			path = Profile;
 			sourceTree = "<group>";
 		};
+		520D146361C15191BB1BCDBB /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				415BE048254AFDBAD329A6DF /* ContestReminderService.swift */,
+			);
+			name = Services;
+			path = Services;
+			sourceTree = "<group>";
+		};
 		576A73D4F1FF42E639AAEC03 /* LeetReview */ = {
 			isa = PBXGroup;
 			children = (
@@ -141,6 +258,7 @@
 				3C28D9F243E625CA72B6A03D /* App */,
 				BD0B3BD3A9CEEB8090BC8B8C /* Core */,
 				97529CF94F388990FC7E916A /* Features */,
+				E1120B96B00148AB7D4D14E5 /* Resources */,
 				5D8F26A88AEB35AE8A7EAB68 /* Shared */,
 			);
 			path = LeetReview;
@@ -178,12 +296,14 @@
 		97529CF94F388990FC7E916A /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				3543DBC140FADEA01BA5FEDF /* CodeEditor */,
 				E86CA8E011C3F83497D15C8C /* Dashboard */,
 				19EDE81A08B1DA1127B29497 /* ProblemDetail */,
 				7DFFA70B0CB1E35218EC50A4 /* Problems */,
 				51E9CB2D38C2E34092851D9E /* Profile */,
 				74C6A5925A5919E29B072329 /* Review */,
 				F40A4D1746051E4A909EC90F /* Settings */,
+				25DD79B8C04A461CCF1D7F7B /* Bookmarks */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -191,9 +311,14 @@
 		9ADBFE4F1A9802306A7B768D /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				AE3CF10F4A54853592F2B56D /* ActionCard.swift */,
+				9C76BB70A5F07F9CBD6C633A /* AuthenticatedWebView.swift */,
 				CA146C1E1B39DEC97616F684 /* CodeBlock.swift */,
 				EBBAF57197388029504419E6 /* DifficultyBadge.swift */,
+				A1B2C3D4E5F6071829304A5B /* FlowLayout.swift */,
 				583F3D3A15DD58C928246F98 /* StatCard.swift */,
+				EAF0F580FC9CF85A725E5A01 /* OfflineBanner.swift */,
+				848B4AB77A2F333A51113D86 /* RatingBadge.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -215,9 +340,22 @@
 			path = Theme;
 			sourceTree = "<group>";
 		};
+		AF5622BE30FF3EE8E533B037 /* LeetReviewTests */ = {
+			isa = PBXGroup;
+			children = (
+				DEA5533A53490BFAB91CF921 /* SM2AlgorithmTests.swift */,
+				D5145E53E3C0046904706E13 /* CodeEditorModelsTests.swift */,
+				F377D57B1957D2FC4F99ADDA /* CacheManagerTests.swift */,
+				229AE6EA4E81090E5403034F /* MockCodeEditorServiceTests.swift */,
+				1246503DD8E83B5B9965B284 /* StoreManagerTests.swift */,
+			);
+			path = LeetReviewTests;
+			sourceTree = "<group>";
+		};
 		B6463F92AC732AABEA0F1A68 = {
 			isa = PBXGroup;
 			children = (
+				AF5622BE30FF3EE8E533B037 /* LeetReviewTests */,
 				576A73D4F1FF42E639AAEC03 /* LeetReview */,
 				DB1A1C0E1631301BC4618E5C /* Products */,
 			);
@@ -226,10 +364,12 @@
 		BD0B3BD3A9CEEB8090BC8B8C /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				99BAD7D26CF4C2FB6A505ED0 /* LeetReviewTests.xctest */,
 				C376C5758B5C08EA85D3B968 /* Auth */,
 				A0FB9A4833EA10D3C1766054 /* Network */,
 				4B7B985181F6615F8A800A96 /* Storage */,
 				AC61844E3702691836C19443 /* Theme */,
+				520D146361C15191BB1BCDBB /* Services */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -251,9 +391,18 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		E1120B96B00148AB7D4D14E5 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A755744FD2182D89108AB7DE /* GoogleService-Info.plist */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		E86CA8E011C3F83497D15C8C /* Dashboard */ = {
 			isa = PBXGroup;
 			children = (
+				0AC5DB7FC814F9E843FA0A09 /* ContestListView.swift */,
 				6CA8423074EB607C578986B4 /* DailyChallenge.swift */,
 				70D0DA884F7C5005BB66F7AE /* DashboardView.swift */,
 				37B600B36AE60257CEBF8267 /* DashboardViewModel.swift */,
@@ -277,6 +426,7 @@
 			buildConfigurationList = BFA4A59D4B8E43AD996B4DF8 /* Build configuration list for PBXNativeTarget "LeetReview" */;
 			buildPhases = (
 				AB111EF3F11B7D7B0B7743D4 /* Sources */,
+				6DA33A9A616EB762CD480624 /* Resources */,
 				8A7159D2F48DAC9BFEF8D7ED /* Frameworks */,
 			);
 			buildRules = (
@@ -286,10 +436,29 @@
 			name = LeetReview;
 			packageProductDependencies = (
 				BC29B4521F9F153944EC7F4E /* KeychainAccess */,
+				83C30EC2A045A362DAB0B46D /* FirebaseAuth */,
+				351D2AC1C9003047DAABEC5F /* FirebaseMessaging */,
 			);
 			productName = LeetReview;
 			productReference = 9D6FE5482B070FAC52A8EA6D /* LeetReview.app */;
 			productType = "com.apple.product-type.application";
+		};
+		C8C4838FB80DE07E5AAF2B59 /* LeetReviewTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B8EA28EDB5A21AABE095AD9E /* Build configuration list for PBXNativeTarget "LeetReviewTests" */;
+			buildPhases = (
+				0EAC81FFE6ADB3D2EB4AE102 /* Sources */,
+				098C6FD0C5A631CF2D8301ED /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CF9366CF4988EFF8EE19C737 /* PBXTargetDependency */,
+			);
+			name = LeetReviewTests;
+			productName = LeetReviewTests;
+			productReference = 99BAD7D26CF4C2FB6A505ED0 /* LeetReviewTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -300,6 +469,10 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
+					BD9C121A89A4F51A772CB722 = {
+						DevelopmentTeam = FY27ZMHFNZ;
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = B402EEE32A7EF6E45FCC83E8 /* Build configuration list for PBXProject "LeetReview" */;
@@ -313,33 +486,68 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				A6AAFC1AB0C62AD1D5878F9A /* XCRemoteSwiftPackageReference "KeychainAccess" */,
+				8CC5881751AF9DFD937675AC /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = DB1A1C0E1631301BC4618E5C /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+				C8C4838FB80DE07E5AAF2B59 /* LeetReviewTests */,
 				BD9C121A89A4F51A772CB722 /* LeetReview */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		6DA33A9A616EB762CD480624 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				809A063F261BA005F98E6C1B /* Assets.xcassets in Resources */,
+				ACA9EA034443616E7C165387 /* GoogleService-Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
+		0EAC81FFE6ADB3D2EB4AE102 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5C85033F2E1E22ADD0DEDDDE /* SM2AlgorithmTests.swift in Sources */,
+				5B5F6CBD023B67AE0D9E991D /* CodeEditorModelsTests.swift in Sources */,
+				3BFBD80857D6D7B194E3A8FF /* CacheManagerTests.swift in Sources */,
+				07D2E45E2B4DDD747E87E432 /* MockCodeEditorServiceTests.swift in Sources */,
+				36FD4374D2372109943348FE /* StoreManagerTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AB111EF3F11B7D7B0B7743D4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				23B52C648BE537E14965C53A /* ActionCard.swift in Sources */,
 				778FE424BDFDB0559237B352 /* AuthManager.swift in Sources */,
+				935B8D5E61F69CFC5F28612B /* AuthenticatedWebView.swift in Sources */,
 				DB82BF7F6C817EB1D290D770 /* CacheManager.swift in Sources */,
 				F73DC9C79533AF87B5475764 /* CodeBlock.swift in Sources */,
+				1178A20166C90600A544701F /* CodeEditorModels.swift in Sources */,
+				18139D3FADB455AF0105F67F /* CodeEditorService.swift in Sources */,
+				EA71EBDB6C72CCA3D67A6075 /* CodeEditorView.swift in Sources */,
+				63F49884439F12DFA862FE10 /* HighlightedCodeEditor.swift in Sources */,
+				3F78895B8E91D3DB2CAD87A8 /* CodeEditorViewModel.swift in Sources */,
 				C0ED85BD0DAEE1BC3C383ED1 /* CodeViewerView.swift in Sources */,
 				C75E41C8333689D339A2F62E /* Color+Theme.swift in Sources */,
 				8BBC0716193727BE102096FC /* ContentView.swift in Sources */,
+				3BEB169BFE790373290A00EB /* ContestListView.swift in Sources */,
 				803121FE37254C4FDCD3B0E4 /* DailyChallenge.swift in Sources */,
 				200851B70A4FC0E8AEEFC70E /* DashboardView.swift in Sources */,
 				944D52D759BB44C86DACBEC1 /* DashboardViewModel.swift in Sources */,
 				BCF27FA388B49649B5DA90D3 /* Date+Relative.swift in Sources */,
 				33B2DC91300137F6BFDB7B67 /* DifficultyBadge.swift in Sources */,
+				F6A1B2C3D4E5F60718293A4B /* FlowLayout.swift in Sources */,
 				AEBAB7AA1FBC526514F1ED02 /* GraphQLQueries.swift in Sources */,
 				527CA9B025E55167A416B9E6 /* LeetCodeAPI.swift in Sources */,
 				BB30E80396C4A6F0E006194C /* LeetReviewApp.swift in Sources */,
@@ -356,21 +564,60 @@
 				F74D959ECE07FDF36DFC6CE0 /* ReviewStore.swift in Sources */,
 				7EC67652FE7303508A9A5A21 /* ReviewViewModel.swift in Sources */,
 				AC21A0CC398919ED41A27BD1 /* SettingsView.swift in Sources */,
+				396685A478BB53523CB112B8 /* AdBannerView.swift in Sources */,
+				FE4184E69B4EAE080839BC52 /* StoreManager.swift in Sources */,
 				99AE7EF4901A1DCE3CAED13E /* StatCard.swift in Sources */,
 				54398753CE9DF1E3EA800570 /* SubmissionListView.swift in Sources */,
 				C52A12B41354A12B386E4B5E /* Theme.swift in Sources */,
+				40A16C7630CE15936F319897 /* ContestReminderService.swift in Sources */,
+				41519A5C3A56B744EC4D24A9 /* NoteStore.swift in Sources */,
+				0AB5936B9A1BB917BD5B90A7 /* ProblemNote.swift in Sources */,
+				2AAE2A8F011C0E5FD51C5AC4 /* ProblemRatingStore.swift in Sources */,
+				93978FEF1C534C8575532806 /* ProblemTimer.swift in Sources */,
+				9A88870FA50C3BCEAB555120 /* TimerStore.swift in Sources */,
+				26E15C30C8C15F40725E65D3 /* BookmarksView.swift in Sources */,
+				F5058A8F61A4B823ECE33620 /* ProblemTimerView.swift in Sources */,
+				CCD467DA038EB74E888AA008 /* RatingBadge.swift in Sources */,
+				A302E69847E85E508D30B108 /* OfflineManager.swift in Sources */,
+				39F6A6250E83FE4BC640C527 /* OfflineBanner.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		CF9366CF4988EFF8EE19C737 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BD9C121A89A4F51A772CB722 /* LeetReview */;
+			targetProxy = 78CD192E5BFD5D30BA56EE1A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		27BED538A3FEA323D4323A7F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.leetreview.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LeetReview.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/LeetReview";
+			};
+			name = Debug;
+		};
 		6E769928649D76101E838C33 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = FY27ZMHFNZ;
 				INFOPLIST_FILE = LeetReview/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = LeetReview;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -380,7 +627,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.leetreview.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.leetreview;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -451,6 +698,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = FY27ZMHFNZ;
 				INFOPLIST_FILE = LeetReview/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = LeetReview;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -460,7 +709,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.leetreview.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.leetreview;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -532,6 +781,22 @@
 			};
 			name = Debug;
 		};
+		E64241D19CA9BDEC02858415 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.leetreview.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LeetReview.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/LeetReview";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -543,6 +808,15 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
+		};
+		B8EA28EDB5A21AABE095AD9E /* Build configuration list for PBXNativeTarget "LeetReviewTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				27BED538A3FEA323D4323A7F /* Debug */,
+				E64241D19CA9BDEC02858415 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		BFA4A59D4B8E43AD996B4DF8 /* Build configuration list for PBXNativeTarget "LeetReview" */ = {
 			isa = XCConfigurationList;
@@ -556,6 +830,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		8CC5881751AF9DFD937675AC /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.0;
+			};
+		};
 		A6AAFC1AB0C62AD1D5878F9A /* XCRemoteSwiftPackageReference "KeychainAccess" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/kishikawakatsumi/KeychainAccess";
@@ -567,6 +849,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		351D2AC1C9003047DAABEC5F /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8CC5881751AF9DFD937675AC /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
+		83C30EC2A045A362DAB0B46D /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8CC5881751AF9DFD937675AC /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
 		BC29B4521F9F153944EC7F4E /* KeychainAccess */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A6AAFC1AB0C62AD1D5878F9A /* XCRemoteSwiftPackageReference "KeychainAccess" */;

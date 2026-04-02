@@ -11,6 +11,7 @@ final class ProblemListViewModel {
     private(set) var isLoading = false
     private(set) var isLoadingMore = false
     private(set) var errorMessage: String?
+    private(set) var isShowingCachedData = false
 
     var searchText = ""
     var selectedDifficulty: DifficultyFilter = .all
@@ -71,9 +72,12 @@ final class ProblemListViewModel {
 
     // MARK: - Data Loading
 
+    private static let firstPageCacheKey = "problem_list_page_0"
+
     func loadProblems() async {
         isLoading = true
         errorMessage = nil
+        isShowingCachedData = false
         currentSkip = 0
 
         let difficulty = selectedDifficulty != .all ? selectedDifficulty.rawValue : nil
@@ -93,8 +97,22 @@ final class ProblemListViewModel {
             problems = result.questions
             totalCount = result.total
             currentSkip = result.questions.count
+
+            // Cache the first page for offline fallback
+            await CacheManager.shared.cache(key: Self.firstPageCacheKey, value: result)
         } catch {
-            errorMessage = error.localizedDescription
+            // Try loading from cache on network failure
+            if let cached = await CacheManager.shared.get(
+                key: Self.firstPageCacheKey,
+                as: ProblemListResult.self
+            ) {
+                problems = cached.questions
+                totalCount = cached.total
+                currentSkip = cached.questions.count
+                isShowingCachedData = true
+            } else {
+                errorMessage = error.localizedDescription
+            }
         }
 
         isLoading = false

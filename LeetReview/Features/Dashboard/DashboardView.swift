@@ -2,6 +2,8 @@ import SwiftUI
 
 struct DashboardView: View {
     @Environment(AuthManager.self) private var authManager
+    @Environment(ThemeManager.self) private var themeManager
+    @Environment(ContestReminderService.self) private var reminderService
     @State private var viewModel = DashboardViewModel()
 
     var body: some View {
@@ -16,6 +18,8 @@ struct DashboardView: View {
                         } else {
                             dailyChallengeSection
                             quickStatsSection
+                            AdBannerView()
+                            toolkitSection
                             upcomingContestsSection
                             recentActivitySection
                         }
@@ -27,7 +31,7 @@ struct DashboardView: View {
                 }
             }
             .navigationTitle("Dashboard")
-            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarColorScheme(themeManager.toolbarColorScheme, for: .navigationBar)
             .task {
                 if viewModel.dailyChallenge == nil {
                     await viewModel.loadDashboard(username: authManager.username)
@@ -58,7 +62,12 @@ struct DashboardView: View {
     @ViewBuilder
     private var dailyChallengeSection: some View {
         if let challenge = viewModel.dailyChallenge {
-            NavigationLink(value: challenge.question.titleSlug) {
+            NavigationLink {
+                ProblemDetailView(
+                    titleSlug: challenge.question.titleSlug,
+                    title: challenge.question.title
+                )
+            } label: {
                 DailyChallengeCard(challenge: challenge)
             }
             .buttonStyle(.plain)
@@ -114,6 +123,76 @@ struct DashboardView: View {
         }
     }
 
+    // MARK: - Toolkit
+
+    private var toolkitSection: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            sectionHeader(title: "Toolkit", icon: "square.grid.2x2.fill")
+
+            LazyVGrid(
+                columns: [
+                    GridItem(.flexible(), spacing: Theme.Spacing.md),
+                    GridItem(.flexible(), spacing: Theme.Spacing.md)
+                ],
+                spacing: Theme.Spacing.md
+            ) {
+                NavigationLink {
+                    ContestListView(contests: viewModel.upcomingContests)
+                } label: {
+                    ActionCard(
+                        title: "Contests",
+                        subtitle: "Schedule reminders",
+                        systemImage: "timer",
+                        tint: Theme.Colors.accent
+                    )
+                }
+                .buttonStyle(.plain)
+
+                NavigationLink {
+                    ProblemListView()
+                } label: {
+                    ActionCard(
+                        title: "Practice",
+                        subtitle: "Browse all problems",
+                        systemImage: "terminal",
+                        tint: Theme.Colors.easy
+                    )
+                }
+                .buttonStyle(.plain)
+
+                NavigationLink {
+                    AuthenticatedBrowserPage(
+                        title: "Discuss",
+                        url: URL(string: "https://leetcode.com/discuss/")!
+                    )
+                } label: {
+                    ActionCard(
+                        title: "Discuss",
+                        subtitle: "Browse community posts",
+                        systemImage: "bubble.left.and.bubble.right.fill",
+                        tint: Theme.Colors.medium
+                    )
+                }
+                .buttonStyle(.plain)
+
+                NavigationLink {
+                    AuthenticatedBrowserPage(
+                        title: "My Lists",
+                        url: URL(string: "https://leetcode.com/problem-list/favorites/")!
+                    )
+                } label: {
+                    ActionCard(
+                        title: "My Lists",
+                        subtitle: "Open your saved lists",
+                        systemImage: "bookmark.fill",
+                        tint: Theme.Colors.hard
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
     // MARK: - Upcoming Contests
 
     @ViewBuilder
@@ -123,7 +202,16 @@ struct DashboardView: View {
                 sectionHeader(title: "Upcoming Contests", icon: "trophy.fill")
 
                 ForEach(viewModel.upcomingContests.prefix(3)) { contest in
-                    ContestRow(contest: contest)
+                    ContestRow(
+                        contest: contest,
+                        reminderSet: reminderService.isReminderSet(for: contest.id),
+                        onToggleReminder: {
+                            Task {
+                                let startTime = Date.fromTimestamp(contest.startTime)
+                                await reminderService.toggleReminder(for: contest, startTime: startTime)
+                            }
+                        }
+                    )
                 }
             }
         }
@@ -138,7 +226,12 @@ struct DashboardView: View {
                 sectionHeader(title: "Recent Activity", icon: "clock.fill")
 
                 ForEach(viewModel.recentSubmissions.prefix(5)) { submission in
-                    NavigationLink(value: submission.titleSlug) {
+                    NavigationLink {
+                        ProblemDetailView(
+                            titleSlug: submission.titleSlug,
+                            title: submission.title
+                        )
+                    } label: {
                         RecentSubmissionRow(submission: submission)
                     }
                     .buttonStyle(.plain)
@@ -164,6 +257,8 @@ struct DashboardView: View {
 
 private struct ContestRow: View {
     let contest: Contest
+    let reminderSet: Bool
+    let onToggleReminder: () -> Void
 
     private var startDate: Date {
         .fromTimestamp(contest.startTime)
@@ -187,6 +282,20 @@ private struct ContestRow: View {
             }
 
             Spacer()
+
+            Button(action: onToggleReminder) {
+                Image(systemName: reminderSet ? "bell.fill" : "bell")
+                    .font(.caption)
+                    .foregroundStyle(reminderSet ? Theme.Colors.accent : Theme.Colors.textSecondary)
+                    .padding(Theme.Spacing.sm)
+                    .background(
+                        reminderSet
+                            ? Theme.Colors.accent.opacity(0.15)
+                            : Theme.Colors.background.opacity(0.5)
+                    )
+                    .clipShape(Circle())
+            }
+            .buttonStyle(.plain)
 
             Text(countdown)
                 .font(.caption.bold().monospacedDigit())

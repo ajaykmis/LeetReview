@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct ProblemListView: View {
+    @Environment(ThemeManager.self) private var themeManager
+    @Environment(OfflineManager.self) private var offlineManager
     @State private var viewModel = ProblemListViewModel()
     @State private var showFilters = false
 
@@ -22,7 +24,7 @@ struct ProblemListView: View {
                 }
             }
             .navigationTitle("Problems")
-            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarColorScheme(themeManager.toolbarColorScheme, for: .navigationBar)
             .searchable(
                 text: $viewModel.searchText,
                 prompt: "Search problems..."
@@ -86,18 +88,37 @@ struct ProblemListView: View {
     private var problemList: some View {
         ScrollView {
             LazyVStack(spacing: Theme.Spacing.sm) {
+                OfflineBanner()
+                    .padding(.horizontal, Theme.Spacing.lg)
+                    .padding(.top, Theme.Spacing.xs)
+
                 // Total count header
                 HStack {
                     Text("\(viewModel.totalCount) problems")
                         .font(.caption)
                         .foregroundStyle(Theme.Colors.textSecondary)
+
+                    if viewModel.isShowingCachedData {
+                        Text("(cached)")
+                            .font(.caption)
+                            .foregroundStyle(Theme.Colors.medium)
+                    }
+
                     Spacer()
                 }
                 .padding(.horizontal, Theme.Spacing.lg)
                 .padding(.top, Theme.Spacing.sm)
 
+                AdBannerView()
+                    .padding(.horizontal, Theme.Spacing.lg)
+
                 ForEach(viewModel.problems) { problem in
-                    NavigationLink(value: problem.titleSlug) {
+                    NavigationLink {
+                        ProblemDetailView(
+                            titleSlug: problem.titleSlug,
+                            title: problem.title
+                        )
+                    } label: {
                         ProblemRow(problem: problem)
                     }
                     .buttonStyle(.plain)

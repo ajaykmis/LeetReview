@@ -4,6 +4,7 @@ actor LeetCodeAPI {
     static let shared = LeetCodeAPI()
 
     private let endpoint = URL(string: "https://leetcode.com/graphql")!
+    private let baseURL = URL(string: "https://leetcode.com")!
     private let session: URLSession
 
     private init() {
@@ -20,23 +21,9 @@ actor LeetCodeAPI {
         variables: sending [String: Any] = [:],
         responseType: T.Type
     ) async throws -> T {
-        var request = URLRequest(url: endpoint)
+        var request = authenticatedRequest(url: endpoint, referer: "https://leetcode.com")
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("https://leetcode.com", forHTTPHeaderField: "Referer")
-        request.setValue("https://leetcode.com", forHTTPHeaderField: "Origin")
-
-        if let csrfToken = AuthManager.getCSRFToken() {
-            request.setValue(csrfToken, forHTTPHeaderField: "x-csrftoken")
-        }
-
-        if let sessionCookie = AuthManager.getSessionCookie() {
-            let csrfToken = AuthManager.getCSRFToken() ?? ""
-            request.setValue(
-                "LEETCODE_SESSION=\(sessionCookie); csrftoken=\(csrfToken)",
-                forHTTPHeaderField: "Cookie"
-            )
-        }
 
         let body: [String: Any] = [
             "query": queryString,
@@ -183,19 +170,282 @@ actor LeetCodeAPI {
         )
         return response.recentAcSubmissionList
     }
+
+    func fetchContestRanking(username: String) async throws -> ContestRankingInfo? {
+        let response = try await query(
+            GraphQLQueries.userContestRankingInfo,
+            variables: ["username": username],
+            responseType: ContestRankingResponse.self
+        )
+        return response.userContestRanking
+    }
+
+    func fetchProfileCalendar(username: String, year: Int? = nil) async throws -> UserCalendar? {
+        var variables: [String: Any] = ["username": username]
+        if let year {
+            variables["year"] = year
+        }
+
+        let response = try await query(
+            GraphQLQueries.userProfileCalendar,
+            variables: variables,
+            responseType: UserProfileCalendarResponse.self
+        )
+        return response.matchedUser.userCalendar
+    }
+
+    func fetchSimilarQuestions(titleSlug: String) async throws -> [SimilarQuestion] {
+        let response = try await query(
+            GraphQLQueries.similarQuestions,
+            variables: ["titleSlug": titleSlug],
+            responseType: SimilarQuestionsResponse.self
+        )
+        return response.question.similarQuestionList
+    }
+
+    func fetchQuestionHints(titleSlug: String) async throws -> [String] {
+        let response = try await query(
+            GraphQLQueries.questionHints,
+            variables: ["titleSlug": titleSlug],
+            responseType: QuestionHintsResponse.self
+        )
+        return response.question.hints
+    }
+
+    func fetchOfficialSolution(titleSlug: String) async throws -> OfficialSolution? {
+        let response = try await query(
+            GraphQLQueries.officialSolution,
+            variables: ["titleSlug": titleSlug],
+            responseType: OfficialSolutionResponse.self
+        )
+        return response.question.solution
+    }
+
+    func fetchCommunitySolutions(
+        questionSlug: String,
+        skip: Int = 0,
+        first: Int = 15,
+        query searchQuery: String = "",
+        orderBy: String = "hot",
+        languageTags: [String] = [],
+        topicTags: [String] = []
+    ) async throws -> CommunitySolutionsResult {
+        let response = try await query(
+            GraphQLQueries.communitySolutions,
+            variables: [
+                "questionSlug": questionSlug,
+                "skip": skip,
+                "first": first,
+                "query": searchQuery,
+                "orderBy": orderBy,
+                "languageTags": languageTags,
+                "topicTags": topicTags
+            ],
+            responseType: CommunitySolutionsResponse.self
+        )
+        return response.questionSolutions
+    }
+
+    func fetchDiscussionArticles(
+        orderBy: String? = nil,
+        keywords: [String],
+        tagSlugs: [String] = [],
+        skip: Int = 0,
+        first: Int = 10
+    ) async throws -> DiscussionArticlesConnection {
+        var variables: [String: Any] = [
+            "keywords": keywords,
+            "tagSlugs": tagSlugs,
+            "skip": skip,
+            "first": first
+        ]
+        if let orderBy {
+            variables["orderBy"] = orderBy
+        }
+
+        let response = try await query(
+            GraphQLQueries.discussionArticles,
+            variables: variables,
+            responseType: DiscussionArticlesResponse.self
+        )
+        return response.ugcArticleDiscussionArticles
+    }
+
+    func fetchDiscussionArticle(topicId: String) async throws -> DiscussionArticle {
+        let response = try await query(
+            GraphQLQueries.discussionArticleDetail,
+            variables: ["topicId": topicId],
+            responseType: DiscussionArticleDetailResponse.self
+        )
+        return response.ugcArticleDiscussionArticle
+    }
+
+    func fetchDiscussionTags() async throws -> [DiscussionTag] {
+        let response = try await query(
+            GraphQLQueries.discussionTags,
+            responseType: DiscussionTagsResponse.self
+        )
+        return response.ugcArticleFollowedDiscussionTags
+    }
+
+    func fetchFavoriteLists() async throws -> FavoriteLists {
+        try await query(
+            GraphQLQueries.myFavoriteList,
+            responseType: FavoriteLists.self
+        )
+    }
+
+    func fetchFavoriteQuestions(
+        favoriteSlug: String,
+        limit: Int = 100,
+        skip: Int = 0
+    ) async throws -> FavoriteQuestionListResult {
+        let response = try await query(
+            GraphQLQueries.favoriteQuestionList,
+            variables: [
+                "favoriteSlug": favoriteSlug,
+                "limit": limit,
+                "skip": skip,
+                "sortBy": [:],
+                "filtersV2": [:]
+            ],
+            responseType: FavoriteQuestionListResponse.self
+        )
+        return response.favoriteQuestionList
+    }
+
+    func runCode(
+        questionTitleSlug: String,
+        questionId: String,
+        programmingLanguage: String,
+        code: String,
+        testCases: String,
+        submitCode: Bool
+    ) async throws -> CodeExecutionHandle {
+        let sanitizedSlug = questionTitleSlug.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? questionTitleSlug
+        let path = "/problems/\(sanitizedSlug)/\(submitCode ? "submit" : "interpret_solution")/"
+        guard let url = URL(string: path, relativeTo: baseURL)?.absoluteURL else {
+            throw APIError.noData
+        }
+        var request = authenticatedRequest(
+            url: url,
+            referer: "https://leetcode.com/problems/\(sanitizedSlug)/"
+        )
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        var payload: [String: Any] = [
+            "lang": programmingLanguage,
+            "question_id": questionId,
+            "typed_code": code
+        ]
+        if !submitCode {
+            payload["data_input"] = testCases
+        }
+        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+
+        let data = try await sendJSONRequest(request)
+        if submitCode, let submissionId = parseIntValue(data["submission_id"]) {
+            return .submission(id: submissionId)
+        }
+
+        if let interpretId = parseStringValue(data["interpret_id"]) {
+            return .interpret(id: interpretId)
+        }
+
+        throw APIError.noData
+    }
+
+    func checkSubmission(id: String) async throws -> Data {
+        let sanitizedId = id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? id
+        guard let url = URL(string: "/submissions/detail/\(sanitizedId)/check/", relativeTo: baseURL)?.absoluteURL else {
+            throw APIError.noData
+        }
+        let request = authenticatedRequest(url: url, referer: nil)
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+            let bodyPreview = String(data: data.prefix(200), encoding: .utf8) ?? "no body"
+            throw APIError.httpError(statusCode: statusCode, detail: bodyPreview)
+        }
+        return data
+    }
+
+    private func authenticatedRequest(url: URL, referer: String?) -> URLRequest {
+        var request = URLRequest(url: url)
+        if let referer {
+            request.setValue(referer, forHTTPHeaderField: "Referer")
+            request.setValue("https://leetcode.com", forHTTPHeaderField: "Origin")
+        }
+
+        if let csrfToken = AuthManager.getCSRFToken() {
+            request.setValue(csrfToken, forHTTPHeaderField: "x-csrftoken")
+        }
+
+        if let sessionCookie = AuthManager.getSessionCookie() {
+            let csrfToken = AuthManager.getCSRFToken() ?? ""
+            request.setValue(
+                "LEETCODE_SESSION=\(sessionCookie); csrftoken=\(csrfToken)",
+                forHTTPHeaderField: "Cookie"
+            )
+        }
+
+        return request
+    }
+
+    private func sendJSONRequest(_ request: URLRequest) async throws -> [String: Any] {
+        let (data, response) = try await session.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+            let bodyPreview = String(data: data.prefix(200), encoding: .utf8) ?? "no body"
+            throw APIError.httpError(statusCode: statusCode, detail: bodyPreview)
+        }
+
+        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw APIError.noData
+        }
+
+        return json
+    }
+
+    private func parseIntValue(_ value: Any?) -> Int? {
+        if let intValue = value as? Int {
+            return intValue
+        }
+        if let stringValue = value as? String {
+            return Int(stringValue)
+        }
+        return nil
+    }
+
+    private func parseStringValue(_ value: Any?) -> String? {
+        if let stringValue = value as? String {
+            return stringValue
+        }
+        if let intValue = value as? Int {
+            return String(intValue)
+        }
+        return nil
+    }
 }
 
 // MARK: - Errors
 
 enum APIError: LocalizedError {
-    case httpError(statusCode: Int)
+    case httpError(statusCode: Int, detail: String? = nil)
     case graphQL([String])
     case noData
 
     var errorDescription: String? {
         switch self {
-        case .httpError(let code):
-            "HTTP error: \(code)"
+        case .httpError(let code, let detail):
+            if let detail, !detail.isEmpty {
+                "HTTP \(code): \(detail)"
+            } else {
+                "HTTP error: \(code)"
+            }
         case .graphQL(let messages):
             "GraphQL errors: \(messages.joined(separator: ", "))"
         case .noData:
@@ -230,12 +480,12 @@ struct ProblemListResponse: Decodable {
     let problemsetQuestionList: ProblemListResult
 }
 
-struct ProblemListResult: Decodable {
+struct ProblemListResult: Codable {
     let total: Int
     let questions: [Problem]
 }
 
-struct Problem: Decodable, Identifiable {
+struct Problem: Codable, Identifiable {
     var id: String { titleSlug }
     let titleSlug: String
     let title: String
@@ -243,28 +493,46 @@ struct Problem: Decodable, Identifiable {
     let topicTags: [TopicTag]
     let acRate: Double
     let status: String?
+
+    enum CodingKeys: String, CodingKey {
+        case titleSlug, title, difficulty, topicTags, acRate, status
+    }
 }
 
-struct TopicTag: Decodable {
+struct TopicTag: Codable {
     let name: String
+    let slug: String?
+    let translatedName: String?
 }
 
 struct ProblemDetailResponse: Decodable {
     let question: ProblemDetail
 }
 
-struct ProblemDetail: Decodable {
+struct ProblemDetail: Codable {
+    let questionId: String?
+    let frontendQuestionId: String?
+    let title: String?
+    let titleSlug: String?
     let content: String?
+    let status: String?
+    let isPaidOnly: Bool?
+    let acRate: Double?
     let codeSnippets: [CodeSnippet]?
     let difficulty: String
     let topicTags: [TopicTag]
     let stats: String?
+    let hints: [String]?
     let likes: Int
     let dislikes: Int
+    let exampleTestcases: String?
+    let exampleTestcaseList: [String]?
+    let solution: OfficialSolution?
 }
 
-struct CodeSnippet: Decodable {
+struct CodeSnippet: Codable {
     let lang: String
+    let langSlug: String?
     let code: String
 }
 
@@ -273,7 +541,16 @@ struct SubmissionListResponse: Decodable {
 }
 
 struct SubmissionListResult: Decodable {
+    private enum CodingKeys: String, CodingKey {
+        case submissions
+    }
+
     let submissions: [Submission]
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        submissions = try container.decodeIfPresent([Submission].self, forKey: .submissions) ?? []
+    }
 }
 
 struct Submission: Decodable, Identifiable {
@@ -319,6 +596,8 @@ struct UpcomingContestsResponse: Decodable {
 struct Contest: Decodable, Identifiable {
     var id: String { title }
     let title: String
+    let titleSlug: String?
+    let cardImg: String?
     let startTime: Int
     let duration: Int
 }
@@ -328,6 +607,7 @@ struct UserProfileResponse: Decodable {
 }
 
 struct UserProfile: Decodable {
+    let username: String?
     let submitStats: SubmitStats
     let profile: ProfileInfo
 }
@@ -344,6 +624,12 @@ struct DifficultyCount: Decodable {
 struct ProfileInfo: Decodable {
     let ranking: Int
     let reputation: Int
+    let realName: String?
+    let aboutMe: String?
+    let userAvatar: String?
+    let countryName: String?
+    let company: String?
+    let school: String?
 }
 
 struct RecentSubmissionsResponse: Decodable {
@@ -358,3 +644,235 @@ struct RecentSubmission: Decodable, Identifiable {
     let lang: String
     let statusDisplay: String
 }
+
+struct ContestRankingResponse: Decodable {
+    let userContestRanking: ContestRankingInfo?
+}
+
+struct ContestRankingInfo: Decodable {
+    let attendedContestsCount: Int?
+    let rating: Double?
+    let globalRanking: Int?
+    let totalParticipants: Int?
+    let topPercentage: Double?
+}
+
+struct UserProfileCalendarResponse: Decodable {
+    let matchedUser: CalendarUser
+}
+
+struct CalendarUser: Decodable {
+    let userCalendar: UserCalendar?
+}
+
+struct UserCalendar: Decodable {
+    let activeYears: [Int]
+    let streak: Int
+    let totalActiveDays: Int
+    let submissionCalendar: String
+}
+
+struct SimilarQuestionsResponse: Decodable {
+    let question: SimilarQuestionContainer
+}
+
+struct SimilarQuestionContainer: Decodable {
+    let similarQuestionList: [SimilarQuestion]
+}
+
+struct SimilarQuestion: Decodable, Identifiable {
+    var id: String { titleSlug }
+    let difficulty: String
+    let titleSlug: String
+    let title: String
+    let isPaidOnly: Bool?
+}
+
+struct QuestionHintsResponse: Decodable {
+    let question: QuestionHintsContainer
+}
+
+struct QuestionHintsContainer: Decodable {
+    let hints: [String]
+}
+
+struct OfficialSolutionResponse: Decodable {
+    let question: OfficialSolutionContainer
+}
+
+struct OfficialSolutionContainer: Decodable {
+    let solution: OfficialSolution?
+}
+
+struct OfficialSolution: Codable {
+    let id: String
+    let title: String?
+    let content: String?
+    let paidOnly: Bool?
+    let hasVideoSolution: Bool?
+    let paidOnlyVideo: Bool?
+    let canSeeDetail: Bool?
+}
+
+struct CommunitySolutionsResponse: Decodable {
+    let questionSolutions: CommunitySolutionsResult
+}
+
+struct CommunitySolutionsResult: Decodable {
+    let hasDirectResults: Bool
+    let totalNum: Int
+    let solutions: [CommunitySolution]
+}
+
+struct CommunitySolution: Decodable, Identifiable {
+    let id: String
+    let title: String
+    let commentCount: Int?
+    let topLevelCommentCount: Int?
+    let viewCount: Int?
+    let solutionTags: [DiscussionArticleTag]
+    let post: CommunityPost
+}
+
+struct CommunityPost: Decodable {
+    let id: String
+    let voteCount: Int?
+    let creationDate: Int?
+    let author: CommunityAuthor?
+}
+
+struct CommunityAuthor: Decodable {
+    let username: String
+    let profile: CommunityAuthorProfile?
+}
+
+struct CommunityAuthorProfile: Decodable {
+    let userAvatar: String?
+    let realName: String?
+    let reputation: Int?
+}
+
+struct DiscussionArticlesResponse: Decodable {
+    let ugcArticleDiscussionArticles: DiscussionArticlesConnection
+}
+
+struct DiscussionArticlesConnection: Decodable {
+    let totalNum: Int
+    let pageInfo: DiscussionPageInfo
+    let edges: [DiscussionArticleEdge]
+}
+
+struct DiscussionPageInfo: Decodable {
+    let hasNextPage: Bool
+}
+
+struct DiscussionArticleEdge: Decodable {
+    let node: DiscussionArticle
+}
+
+struct DiscussionArticleDetailResponse: Decodable {
+    let ugcArticleDiscussionArticle: DiscussionArticle
+}
+
+struct DiscussionArticle: Decodable, Identifiable {
+    var id: String { uuid }
+    let uuid: String
+    let title: String
+    let slug: String
+    let summary: String?
+    let content: String?
+    let createdAt: String?
+    let updatedAt: String?
+    let topicId: String?
+    let hitCount: Int?
+    let author: DiscussionArticleAuthor?
+    let tags: [DiscussionArticleTag]
+    let topic: DiscussionTopic?
+}
+
+struct DiscussionArticleAuthor: Decodable {
+    let realName: String?
+    let userAvatar: String?
+    let userName: String?
+}
+
+struct DiscussionArticleTag: Decodable, Identifiable {
+    var id: String { slug }
+    let name: String
+    let slug: String
+    let tagType: String?
+}
+
+struct DiscussionTopic: Decodable {
+    let id: String
+    let topLevelCommentCount: Int?
+}
+
+struct DiscussionTagsResponse: Decodable {
+    let ugcArticleFollowedDiscussionTags: [DiscussionTag]
+}
+
+struct DiscussionTag: Decodable, Identifiable {
+    let id: String
+    let name: String
+    let slug: String
+}
+
+struct FavoriteLists: Decodable {
+    let myCreatedFavoriteList: FavoriteListCollection
+    let myCollectedFavoriteList: FavoriteListCollection
+}
+
+struct FavoriteListCollection: Decodable {
+    let favorites: [FavoriteList]
+    let hasMore: Bool
+    let totalLength: Int
+}
+
+struct FavoriteList: Decodable, Identifiable {
+    var id: String { slug }
+    let name: String
+    let slug: String
+    let favoriteType: String?
+    let coverEmoji: String?
+    let coverBackgroundColor: String?
+    let hasCurrentQuestion: Bool?
+    let isPublicFavorite: Bool?
+    let lastQuestionAddedAt: Int?
+}
+
+struct FavoriteQuestionListResponse: Decodable {
+    let favoriteQuestionList: FavoriteQuestionListResult
+}
+
+struct FavoriteQuestionListResult: Decodable {
+    let questions: [FavoriteQuestion]
+    let totalLength: Int
+    let hasMore: Bool
+}
+
+struct FavoriteQuestion: Decodable, Identifiable {
+    var id: String { titleSlug }
+    let difficulty: String
+    let paidOnly: Bool?
+    let questionFrontendId: String?
+    let status: String?
+    let title: String
+    let titleSlug: String
+    let isInMyFavorites: Bool?
+    let frequency: Double?
+    let acRate: Double
+    let topicTags: [FavoriteTopicTag]
+}
+
+struct FavoriteTopicTag: Decodable, Identifiable {
+    var id: String { slug }
+    let name: String
+    let slug: String
+}
+
+enum CodeExecutionHandle {
+    case interpret(id: String)
+    case submission(id: Int)
+}
+

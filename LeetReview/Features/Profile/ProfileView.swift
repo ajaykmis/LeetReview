@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @Environment(AuthManager.self) private var authManager
+    @Environment(ThemeManager.self) private var themeManager
     @State private var viewModel = ProfileViewModel()
 
     var body: some View {
@@ -19,7 +20,7 @@ struct ProfileView: View {
                 }
             }
             .navigationTitle("Profile")
-            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarColorScheme(themeManager.toolbarColorScheme, for: .navigationBar)
             .task {
                 if let username = authManager.username {
                     await viewModel.loadProfile(username: username)
@@ -33,69 +34,189 @@ struct ProfileView: View {
         }
     }
 
-    // MARK: - Profile Content
-
     private var profileContent: some View {
         ScrollView {
             VStack(spacing: Theme.Spacing.lg) {
                 headerSection
-                statsCards
+                if viewModel.contestRanking != nil {
+                    contestSection
+                }
+                progressSnapshot
                 difficultyBreakdown
-                rankingSection
+                activityHeatmap
+                languageBreakdown
                 recentSubmissionsSection
             }
             .padding(Theme.Spacing.lg)
         }
     }
 
-    // MARK: - Header
+    @ViewBuilder
+    private var contestSection: some View {
+        if let contest = viewModel.contestRanking {
+            VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+                Text("Contest")
+                    .font(.headline)
+                    .foregroundStyle(Theme.Colors.text)
+
+                HStack(spacing: Theme.Spacing.md) {
+                    if let rating = contest.rating {
+                        insightPill(title: "Rating", value: String(format: "%.0f", rating))
+                    }
+                    if let globalRanking = contest.globalRanking, globalRanking > 0 {
+                        insightPill(title: "Global Rank", value: "#\(formatNumber(globalRanking))")
+                    }
+                    if let attended = contest.attendedContestsCount {
+                        insightPill(title: "Attended", value: "\(attended)")
+                    }
+                }
+
+                if let topPercent = contest.topPercentage, topPercent > 0 {
+                    Text("Top \(String(format: "%.1f", topPercent))% of all contestants")
+                        .font(.caption)
+                        .foregroundStyle(Theme.Colors.accent)
+                }
+            }
+            .padding(Theme.Spacing.lg)
+            .background(Theme.Colors.card)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
+        }
+    }
 
     private var headerSection: some View {
-        VStack(spacing: Theme.Spacing.sm) {
-            Image(systemName: "person.crop.circle.fill")
-                .font(.system(size: 64))
-                .foregroundStyle(Theme.Colors.accent)
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            HStack(spacing: Theme.Spacing.md) {
+                if let avatarURL = viewModel.avatarURL {
+                    AsyncImage(url: avatarURL) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } placeholder: {
+                        Image(systemName: "person.crop.circle.fill")
+                            .font(.system(size: 58))
+                            .foregroundStyle(Theme.Colors.accent)
+                    }
+                    .frame(width: 58, height: 58)
+                    .clipShape(Circle())
+                } else {
+                    Image(systemName: "person.crop.circle.fill")
+                        .font(.system(size: 58))
+                        .foregroundStyle(Theme.Colors.accent)
+                }
 
-            Text(authManager.username ?? "User")
-                .font(.title2.bold())
+                VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                    Text(authManager.username ?? "User")
+                        .font(.title2.bold())
+                        .foregroundStyle(Theme.Colors.text)
+
+                    if let realName = viewModel.realName {
+                        Text(realName)
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.Colors.textSecondary)
+                    }
+
+                    Text("\(viewModel.totalSolved) problems solved")
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.Colors.textSecondary)
+
+                    Text(viewModel.momentumHeadline)
+                        .font(.caption)
+                        .foregroundStyle(Theme.Colors.accent)
+                }
+
+                Spacer()
+            }
+
+            // Profile details
+            if viewModel.company != nil || viewModel.school != nil {
+                HStack(spacing: Theme.Spacing.lg) {
+                    if let company = viewModel.company {
+                        Label(company, systemImage: "building.2")
+                            .font(.caption)
+                            .foregroundStyle(Theme.Colors.textSecondary)
+                    }
+                    if let school = viewModel.school {
+                        Label(school, systemImage: "graduationcap")
+                            .font(.caption)
+                            .foregroundStyle(Theme.Colors.textSecondary)
+                    }
+                }
+            }
+
+            HStack(spacing: Theme.Spacing.md) {
+                insightPill(title: "Rank", value: viewModel.ranking > 0 ? "#\(formatNumber(viewModel.ranking))" : "--")
+                insightPill(title: "Reputation", value: "\(viewModel.reputation)")
+                insightPill(title: "Active Days", value: "\(viewModel.activeDaysCount)")
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Theme.Spacing.lg)
+        .background(Theme.Colors.card)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
+    }
+
+    private var progressSnapshot: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            Text("Progress Snapshot")
+                .font(.headline)
                 .foregroundStyle(Theme.Colors.text)
 
-            Text("\(viewModel.totalSolved) problems solved")
-                .font(.subheadline)
-                .foregroundStyle(Theme.Colors.textSecondary)
+            HStack(spacing: Theme.Spacing.md) {
+                StatCard(
+                    title: "Easy",
+                    value: "\(viewModel.easySolved)",
+                    color: Theme.Colors.easy,
+                    icon: "checkmark.circle"
+                )
+
+                StatCard(
+                    title: "Medium",
+                    value: "\(viewModel.mediumSolved)",
+                    color: Theme.Colors.medium,
+                    icon: "flame"
+                )
+
+                StatCard(
+                    title: "Hard",
+                    value: "\(viewModel.hardSolved)",
+                    color: Theme.Colors.hard,
+                    icon: "bolt.fill"
+                )
+            }
+
+            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                HStack {
+                    Text("Weekly consistency")
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.Colors.text)
+                    Spacer()
+                    Text("\(Int(viewModel.weeklyGoalProgress * 100))%")
+                        .font(.subheadline.bold().monospacedDigit())
+                        .foregroundStyle(Theme.Colors.accent)
+                }
+
+                GeometryReader { geometry in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(Theme.Colors.background.opacity(0.7))
+                            .frame(height: 10)
+
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(Theme.Colors.accent)
+                            .frame(width: geometry.size.width * viewModel.weeklyGoalProgress, height: 10)
+                    }
+                }
+                .frame(height: 10)
+
+                Text("Suggested focus: \(viewModel.nextFocus)")
+                    .font(.caption)
+                    .foregroundStyle(Theme.Colors.textSecondary)
+            }
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, Theme.Spacing.lg)
+        .padding(Theme.Spacing.lg)
+        .background(Theme.Colors.card)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
     }
-
-    // MARK: - Stats Cards
-
-    private var statsCards: some View {
-        HStack(spacing: Theme.Spacing.md) {
-            StatCard(
-                title: "Easy",
-                value: "\(viewModel.easySolved)",
-                color: Theme.Colors.easy,
-                icon: "checkmark.circle"
-            )
-
-            StatCard(
-                title: "Medium",
-                value: "\(viewModel.mediumSolved)",
-                color: Theme.Colors.medium,
-                icon: "flame"
-            )
-
-            StatCard(
-                title: "Hard",
-                value: "\(viewModel.hardSolved)",
-                color: Theme.Colors.hard,
-                icon: "bolt.fill"
-            )
-        }
-    }
-
-    // MARK: - Difficulty Breakdown with Progress Bars
 
     private var difficultyBreakdown: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
@@ -103,50 +224,84 @@ struct ProfileView: View {
                 .font(.headline)
                 .foregroundStyle(Theme.Colors.text)
 
-            DifficultyProgressRow(
-                label: "Easy",
-                solved: viewModel.easySolved,
-                color: Theme.Colors.easy
-            )
-
-            DifficultyProgressRow(
-                label: "Medium",
-                solved: viewModel.mediumSolved,
-                color: Theme.Colors.medium
-            )
-
-            DifficultyProgressRow(
-                label: "Hard",
-                solved: viewModel.hardSolved,
-                color: Theme.Colors.hard
-            )
+            DifficultyProgressRow(label: "Easy", solved: viewModel.easySolved, color: Theme.Colors.easy)
+            DifficultyProgressRow(label: "Medium", solved: viewModel.mediumSolved, color: Theme.Colors.medium)
+            DifficultyProgressRow(label: "Hard", solved: viewModel.hardSolved, color: Theme.Colors.hard)
         }
         .padding(Theme.Spacing.lg)
         .background(Theme.Colors.card)
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
     }
 
-    // MARK: - Ranking
+    private var activityHeatmap: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            HStack {
+                Text("Activity Heatmap")
+                    .font(.headline)
+                    .foregroundStyle(Theme.Colors.text)
+                Spacer()
+                Text("Last 20 weeks")
+                    .font(.caption)
+                    .foregroundStyle(Theme.Colors.textSecondary)
+            }
 
-    private var rankingSection: some View {
-        HStack(spacing: Theme.Spacing.md) {
-            StatCard(
-                title: "Ranking",
-                value: viewModel.ranking > 0 ? "#\(formatNumber(viewModel.ranking))" : "--",
-                color: Theme.Colors.accent,
-                icon: "trophy"
-            )
+            ScrollView(.horizontal, showsIndicators: false) {
+                let days = viewModel.heatmapDays
+                let weeks = stride(from: 0, to: days.count, by: 7).map { Array(days[$0..<min($0 + 7, days.count)]) }
+                HStack(spacing: 4) {
+                    ForEach(Array(weeks.enumerated()), id: \.offset) { _, week in
+                        VStack(spacing: 4) {
+                            ForEach(week) { day in
+                                RoundedRectangle(cornerRadius: 3)
+                                    .fill(heatmapColor(for: day.intensity))
+                                    .frame(width: 16, height: 16)
+                            }
+                        }
+                    }
+                }
+            }
+            .defaultScrollAnchor(.trailing)
 
-            StatCard(
-                title: "Reputation",
-                value: "\(viewModel.reputation)",
-                color: Theme.Colors.accent,
-                icon: "star.fill"
-            )
+            Text("Accepted-submission activity is approximated from the recent submissions payload until a full calendar API is wired.")
+                .font(.caption)
+                .foregroundStyle(Theme.Colors.textSecondary)
         }
+        .padding(Theme.Spacing.lg)
+        .background(Theme.Colors.card)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
     }
 
-    // MARK: - Recent Submissions
+    private var languageBreakdown: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            Text("Languages")
+                .font(.headline)
+                .foregroundStyle(Theme.Colors.text)
+
+            if viewModel.languageBreakdown.isEmpty {
+                Text("No recent language data yet.")
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.Colors.textSecondary)
+            } else {
+                ForEach(viewModel.languageBreakdown) { item in
+                    HStack {
+                        Text(item.language)
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.Colors.text)
+
+                        Spacer()
+
+                        Text("\(item.count)")
+                            .font(.subheadline.bold().monospacedDigit())
+                            .foregroundStyle(Theme.Colors.accent)
+                    }
+                    .padding(.vertical, Theme.Spacing.xs)
+                }
+            }
+        }
+        .padding(Theme.Spacing.lg)
+        .background(Theme.Colors.card)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
+    }
 
     private var recentSubmissionsSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
@@ -171,7 +326,12 @@ struct ProfileView: View {
             } else {
                 LazyVStack(spacing: 0) {
                     ForEach(viewModel.recentSubmissions) { submission in
-                        NavigationLink(value: submission.titleSlug) {
+                        NavigationLink {
+                            ProblemDetailView(
+                                titleSlug: submission.titleSlug,
+                                title: submission.title
+                            )
+                        } label: {
                             RecentSubmissionRow(submission: submission)
                         }
                         .buttonStyle(.plain)
@@ -187,13 +347,7 @@ struct ProfileView: View {
         .padding(Theme.Spacing.lg)
         .background(Theme.Colors.card)
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
-        .navigationDestination(for: String.self) { slug in
-            // Navigate to problem detail when available; placeholder for now
-            ProblemDetailPlaceholder(titleSlug: slug)
-        }
     }
-
-    // MARK: - Error View
 
     private func errorView(message: String) -> some View {
         VStack(spacing: Theme.Spacing.lg) {
@@ -229,29 +383,53 @@ struct ProfileView: View {
         .padding(Theme.Spacing.xl)
     }
 
-    // MARK: - Helpers
-
     private func formatNumber(_ number: Int) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         return formatter.string(from: NSNumber(value: number)) ?? "\(number)"
     }
-}
 
-// MARK: - Difficulty Progress Row
+    private func insightPill(title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+            Text(title.uppercased())
+                .font(.caption2.bold())
+                .foregroundStyle(Theme.Colors.textSecondary)
+            Text(value)
+                .font(.subheadline.bold().monospacedDigit())
+                .foregroundStyle(Theme.Colors.text)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Theme.Spacing.md)
+        .background(Theme.Colors.background.opacity(0.75))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func heatmapColor(for intensity: Int) -> Color {
+        switch intensity {
+        case 0: Theme.Colors.background.opacity(0.8)
+        case 1: Theme.Colors.easy.opacity(0.35)
+        case 2: Theme.Colors.easy.opacity(0.55)
+        case 3: Theme.Colors.accent.opacity(0.7)
+        default: Theme.Colors.accent
+        }
+    }
+}
 
 private struct DifficultyProgressRow: View {
     let label: String
     let solved: Int
     let color: Color
 
-    // Approximate total counts on LeetCode (used for progress bar scale)
     private var estimatedTotal: Int {
         switch label.lowercased() {
-        case "easy": return 800
-        case "medium": return 1700
-        case "hard": return 800
-        default: return 1000
+        case "easy":
+            return 800
+        case "medium":
+            return 1700
+        case "hard":
+            return 800
+        default:
+            return 1000
         }
     }
 
@@ -289,8 +467,6 @@ private struct DifficultyProgressRow: View {
         }
     }
 }
-
-// MARK: - Recent Submission Row
 
 private struct RecentSubmissionRow: View {
     let submission: RecentSubmission
@@ -334,23 +510,6 @@ private struct RecentSubmissionRow: View {
         .padding(.vertical, Theme.Spacing.md)
     }
 }
-
-// MARK: - Problem Detail Placeholder (until Stage 3 is wired)
-
-private struct ProblemDetailPlaceholder: View {
-    let titleSlug: String
-
-    var body: some View {
-        ZStack {
-            Theme.Colors.background.ignoresSafeArea()
-            Text(titleSlug)
-                .foregroundStyle(Theme.Colors.text)
-        }
-        .navigationTitle(titleSlug)
-    }
-}
-
-// MARK: - Preview
 
 #Preview {
     ProfileView()

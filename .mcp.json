@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "mobile-mcp": {
+      "command": "mcp-server-mobile",
+      "args": ["--stdio"]
+    }
+  }
+}

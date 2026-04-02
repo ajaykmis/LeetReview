@@ -2,7 +2,9 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(AuthManager.self) private var authManager
-    @State private var isDarkMode = true
+    @Environment(ThemeManager.self) private var themeManager
+    @Environment(StoreManager.self) private var storeManager
+    @Environment(ContestReminderService.self) private var reminderService
     @State private var showingLogoutConfirmation = false
     @State private var showingClearCacheConfirmation = false
     @State private var cacheCleared = false
@@ -12,150 +14,286 @@ struct SettingsView: View {
             ZStack {
                 Theme.Colors.background.ignoresSafeArea()
 
-                List {
-                    appearanceSection
-                    dataSection
-                    accountSection
-                    aboutSection
+                ScrollView {
+                    VStack(spacing: Theme.Spacing.lg) {
+                        profileCard
+                        premiumCard
+                        preferencesCard
+                        dataCard
+                        aboutCard
+                        logoutButton
+                    }
+                    .padding(Theme.Spacing.lg)
                 }
-                .scrollContentBackground(.hidden)
-                .listStyle(.insetGrouped)
             }
             .navigationTitle("Settings")
-            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarColorScheme(themeManager.toolbarColorScheme, for: .navigationBar)
         }
     }
 
-    // MARK: - Appearance
+    // MARK: - Profile Card
 
-    private var appearanceSection: some View {
-        Section {
-            Toggle(isOn: $isDarkMode) {
-                Label {
-                    Text("Dark Mode")
-                        .foregroundStyle(Theme.Colors.text)
-                } icon: {
-                    Image(systemName: "moon.fill")
-                        .foregroundStyle(Theme.Colors.accent)
-                }
+    private var profileCard: some View {
+        HStack(spacing: Theme.Spacing.lg) {
+            ZStack {
+                Circle()
+                    .fill(Theme.Colors.accent.opacity(0.15))
+                    .frame(width: 56, height: 56)
+                Image(systemName: "person.fill")
+                    .font(.title2)
+                    .foregroundStyle(Theme.Colors.accent)
             }
-            .tint(Theme.Colors.accent)
-            .listRowBackground(Theme.Colors.card)
-        } header: {
-            Text("Appearance")
-                .foregroundStyle(Theme.Colors.textSecondary)
-        }
-    }
 
-    // MARK: - Data
+            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                Text(authManager.username ?? "User")
+                    .font(.title3.bold())
+                    .foregroundStyle(Theme.Colors.text)
 
-    private var dataSection: some View {
-        Section {
-            Button {
-                showingClearCacheConfirmation = true
-            } label: {
-                Label {
-                    HStack {
-                        Text("Clear Cache")
-                            .foregroundStyle(Theme.Colors.text)
-                        Spacer()
-                        if cacheCleared {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(Theme.Colors.easy)
-                                .transition(.scale.combined(with: .opacity))
-                        }
-                    }
-                } icon: {
-                    Image(systemName: "trash")
-                        .foregroundStyle(Theme.Colors.accent)
-                }
-            }
-            .listRowBackground(Theme.Colors.card)
-            .alert("Clear Cache", isPresented: $showingClearCacheConfirmation) {
-                Button("Cancel", role: .cancel) {}
-                Button("Clear", role: .destructive) {
-                    clearCache()
-                }
-            } message: {
-                Text("This will remove all cached problem data and images. You will need an internet connection to reload them.")
-            }
-        } header: {
-            Text("Data")
-                .foregroundStyle(Theme.Colors.textSecondary)
-        }
-    }
-
-    // MARK: - Account
-
-    private var accountSection: some View {
-        Section {
-            Button {
-                showingLogoutConfirmation = true
-            } label: {
-                Label {
-                    Text("Logout")
-                        .foregroundStyle(Theme.Colors.hard)
-                } icon: {
-                    Image(systemName: "rectangle.portrait.and.arrow.right")
-                        .foregroundStyle(Theme.Colors.hard)
-                }
-            }
-            .listRowBackground(Theme.Colors.card)
-            .alert("Logout", isPresented: $showingLogoutConfirmation) {
-                Button("Cancel", role: .cancel) {}
-                Button("Logout", role: .destructive) {
-                    authManager.logout()
-                }
-            } message: {
-                Text("Are you sure you want to sign out? You will need to log in again to access your submissions.")
-            }
-        } header: {
-            Text("Account")
-                .foregroundStyle(Theme.Colors.textSecondary)
-        } footer: {
-            if let username = authManager.username {
-                Text("Signed in as \(username)")
+                Text(authManager.isLoggedIn ? "Signed in with LeetCode" : "Username only mode")
+                    .font(.caption)
                     .foregroundStyle(Theme.Colors.textSecondary)
             }
+
+            Spacer()
         }
+        .padding(Theme.Spacing.lg)
+        .background(Theme.Colors.card)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
     }
 
-    // MARK: - About
+    // MARK: - Premium Card
 
-    private var aboutSection: some View {
-        Section {
-            HStack {
-                Label {
-                    Text("Version")
-                        .foregroundStyle(Theme.Colors.text)
-                } icon: {
-                    Image(systemName: "info.circle")
-                        .foregroundStyle(Theme.Colors.accent)
+    private var premiumCard: some View {
+        VStack(spacing: 0) {
+            settingSectionHeader(title: "Premium", icon: "crown.fill", tint: Theme.Colors.medium)
+
+            if storeManager.isPurchased {
+                settingRow(icon: "checkmark.seal.fill", iconColor: Theme.Colors.easy, title: "Ads Removed") {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(Theme.Colors.easy)
                 }
+            } else {
+                Button {
+                    Task { await storeManager.purchaseRemoveAds() }
+                } label: {
+                    settingRow(icon: "star.fill", iconColor: Theme.Colors.medium, title: "Remove Ads") {
+                        if storeManager.isLoading {
+                            ProgressView().controlSize(.small).tint(Theme.Colors.accent)
+                        } else {
+                            Text(storeManager.priceString)
+                                .font(.subheadline.bold())
+                                .foregroundStyle(Theme.Colors.accent)
+                        }
+                    }
+                }
+                .disabled(storeManager.isLoading)
+
+                Divider().padding(.leading, 52)
+
+                Button {
+                    Task { await storeManager.restorePurchases() }
+                } label: {
+                    settingRow(icon: "arrow.clockwise", iconColor: Theme.Colors.accent, title: "Restore Purchases") {
+                        EmptyView()
+                    }
+                }
+            }
+
+            if let error = storeManager.errorMessage {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(Theme.Colors.hard)
+                    .padding(.horizontal, Theme.Spacing.lg)
+                    .padding(.bottom, Theme.Spacing.md)
+            }
+        }
+        .background(Theme.Colors.card)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
+    }
+
+    // MARK: - Preferences Card
+
+    private var preferencesCard: some View {
+        VStack(spacing: 0) {
+            settingSectionHeader(title: "Preferences", icon: "paintbrush.fill", tint: Theme.Colors.accent)
+
+            HStack(spacing: Theme.Spacing.md) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.purple.opacity(0.15))
+                        .frame(width: 32, height: 32)
+                    Image(systemName: "moon.fill")
+                        .font(.caption)
+                        .foregroundStyle(.purple)
+                }
+
+                Text("Dark Mode")
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.Colors.text)
 
                 Spacer()
 
+                Toggle("", isOn: Binding(
+                    get: { themeManager.isDarkModeEnabled },
+                    set: { themeManager.isDarkModeEnabled = $0 }
+                ))
+                .tint(Theme.Colors.accent)
+                .labelsHidden()
+            }
+            .padding(.horizontal, Theme.Spacing.lg)
+            .padding(.vertical, Theme.Spacing.md)
+
+            Divider().padding(.leading, 52)
+
+            settingRow(icon: "bell.badge", iconColor: Theme.Colors.accent, title: "Contest Reminders") {
+                Picker("", selection: Binding(
+                    get: { reminderService.defaultReminderMinutes },
+                    set: { reminderService.defaultReminderMinutes = $0 }
+                )) {
+                    Text("15 min before").tag(15)
+                    Text("30 min before").tag(30)
+                    Text("1 hour before").tag(60)
+                }
+                .pickerStyle(.menu)
+                .tint(Theme.Colors.accent)
+            }
+        }
+        .background(Theme.Colors.card)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
+    }
+
+    // MARK: - Data Card
+
+    private var dataCard: some View {
+        VStack(spacing: 0) {
+            settingSectionHeader(title: "Data", icon: "externaldrive.fill", tint: Theme.Colors.easy)
+
+            Button {
+                showingClearCacheConfirmation = true
+            } label: {
+                settingRow(icon: "trash", iconColor: .orange, title: "Clear Cache") {
+                    if cacheCleared {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(Theme.Colors.easy)
+                            .transition(.scale.combined(with: .opacity))
+                    } else {
+                        Text(CacheManager.shared.cacheSizeString())
+                            .font(.caption)
+                            .foregroundStyle(Theme.Colors.textSecondary)
+                            .padding(.horizontal, Theme.Spacing.sm)
+                            .padding(.vertical, 4)
+                            .background(Theme.Colors.background)
+                            .clipShape(Capsule())
+                    }
+                }
+            }
+            .alert("Clear Cache", isPresented: $showingClearCacheConfirmation) {
+                Button("Cancel", role: .cancel) {}
+                Button("Clear", role: .destructive) { clearCache() }
+            } message: {
+                Text("This will remove all cached problem data and images.")
+            }
+        }
+        .background(Theme.Colors.card)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
+    }
+
+    // MARK: - About Card
+
+    private var aboutCard: some View {
+        VStack(spacing: 0) {
+            settingSectionHeader(title: "About", icon: "info.circle.fill", tint: Theme.Colors.textSecondary)
+
+            settingRow(icon: "app.badge", iconColor: Theme.Colors.accent, title: "Version") {
                 Text(appVersion)
+                    .font(.caption)
                     .foregroundStyle(Theme.Colors.textSecondary)
             }
-            .listRowBackground(Theme.Colors.card)
+
+            Divider().padding(.leading, 52)
 
             NavigationLink {
                 licensesView
             } label: {
-                Label {
-                    Text("Licenses")
-                        .foregroundStyle(Theme.Colors.text)
-                } icon: {
-                    Image(systemName: "doc.text")
-                        .foregroundStyle(Theme.Colors.accent)
+                settingRow(icon: "doc.text", iconColor: Theme.Colors.accent, title: "Licenses") {
+                    Image(systemName: "chevron.right")
+                        .font(.caption2)
+                        .foregroundStyle(Theme.Colors.textSecondary)
                 }
             }
-            .listRowBackground(Theme.Colors.card)
-        } header: {
-            Text("About")
-                .foregroundStyle(Theme.Colors.textSecondary)
         }
+        .background(Theme.Colors.card)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
+    }
+
+    // MARK: - Logout Button
+
+    private var logoutButton: some View {
+        Button {
+            showingLogoutConfirmation = true
+        } label: {
+            HStack(spacing: Theme.Spacing.sm) {
+                Image(systemName: "rectangle.portrait.and.arrow.right")
+                Text("Sign Out")
+            }
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(Theme.Colors.hard)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, Theme.Spacing.md)
+            .background(Theme.Colors.hard.opacity(0.12))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .alert("Sign Out", isPresented: $showingLogoutConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Sign Out", role: .destructive) { authManager.logout() }
+        } message: {
+            Text("Are you sure? You will need to log in again to access your submissions.")
+        }
+    }
+
+    // MARK: - Reusable Components
+
+    private func settingSectionHeader(title: String, icon: String, tint: Color) -> some View {
+        HStack(spacing: Theme.Spacing.sm) {
+            Image(systemName: icon)
+                .font(.caption)
+                .foregroundStyle(tint)
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Theme.Colors.textSecondary)
+            Spacer()
+        }
+        .padding(.horizontal, Theme.Spacing.lg)
+        .padding(.top, Theme.Spacing.md)
+        .padding(.bottom, Theme.Spacing.sm)
+    }
+
+    private func settingRow<Trailing: View>(
+        icon: String,
+        iconColor: Color,
+        title: String,
+        @ViewBuilder trailing: () -> Trailing
+    ) -> some View {
+        HStack(spacing: Theme.Spacing.md) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(iconColor.opacity(0.15))
+                    .frame(width: 32, height: 32)
+                Image(systemName: icon)
+                    .font(.caption)
+                    .foregroundStyle(iconColor)
+            }
+
+            Text(title)
+                .font(.subheadline)
+                .foregroundStyle(Theme.Colors.text)
+
+            Spacer()
+
+            trailing()
+        }
+        .padding(.horizontal, Theme.Spacing.lg)
+        .padding(.vertical, Theme.Spacing.md)
     }
 
     // MARK: - Licenses View
@@ -164,42 +302,54 @@ struct SettingsView: View {
         ZStack {
             Theme.Colors.background.ignoresSafeArea()
 
-            List {
-                licenseRow(
-                    name: "KeychainAccess",
-                    url: "https://github.com/kishikawakatsumi/KeychainAccess",
-                    license: "MIT License"
-                )
-
-                licenseRow(
-                    name: "Highlightr",
-                    url: "https://github.com/raspu/Highlightr",
-                    license: "MIT License"
-                )
+            ScrollView {
+                VStack(spacing: Theme.Spacing.md) {
+                    licenseCard(
+                        name: "KeychainAccess",
+                        url: "github.com/kishikawakatsumi/KeychainAccess",
+                        license: "MIT License"
+                    )
+                    licenseCard(
+                        name: "Highlightr",
+                        url: "github.com/raspu/Highlightr",
+                        license: "MIT License"
+                    )
+                }
+                .padding(Theme.Spacing.lg)
             }
-            .scrollContentBackground(.hidden)
-            .listStyle(.insetGrouped)
         }
         .navigationTitle("Licenses")
-        .toolbarColorScheme(.dark, for: .navigationBar)
+        .toolbarColorScheme(themeManager.toolbarColorScheme, for: .navigationBar)
     }
 
-    private func licenseRow(name: String, url: String, license: String) -> some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-            Text(name)
-                .font(.subheadline.bold())
-                .foregroundStyle(Theme.Colors.text)
+    private func licenseCard(name: String, url: String, license: String) -> some View {
+        HStack(spacing: Theme.Spacing.md) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Theme.Colors.accent.opacity(0.15))
+                    .frame(width: 32, height: 32)
+                Image(systemName: "shippingbox")
+                    .font(.caption)
+                    .foregroundStyle(Theme.Colors.accent)
+            }
 
-            Text(url)
-                .font(.caption)
-                .foregroundStyle(Theme.Colors.accent)
+            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                Text(name)
+                    .font(.subheadline.bold())
+                    .foregroundStyle(Theme.Colors.text)
+                Text(url)
+                    .font(.caption)
+                    .foregroundStyle(Theme.Colors.accent)
+                Text(license)
+                    .font(.caption2)
+                    .foregroundStyle(Theme.Colors.textSecondary)
+            }
 
-            Text(license)
-                .font(.caption)
-                .foregroundStyle(Theme.Colors.textSecondary)
+            Spacer()
         }
-        .padding(.vertical, Theme.Spacing.xs)
-        .listRowBackground(Theme.Colors.card)
+        .padding(Theme.Spacing.lg)
+        .background(Theme.Colors.card)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
     }
 
     // MARK: - Helpers
@@ -211,35 +361,20 @@ struct SettingsView: View {
     }
 
     private func clearCache() {
-        // Clear URL cache
         URLCache.shared.removeAllCachedResponses()
 
-        // Clear any temporary files
-        let tmpDir = FileManager.default.temporaryDirectory
-        if let files = try? FileManager.default.contentsOfDirectory(
-            at: tmpDir,
-            includingPropertiesForKeys: nil
-        ) {
-            for file in files {
-                try? FileManager.default.removeItem(at: file)
-            }
+        Task {
+            await CacheManager.shared.clearAll()
         }
 
-        withAnimation {
-            cacheCleared = true
-        }
+        withAnimation { cacheCleared = true }
 
-        // Reset the checkmark after a delay
         Task { @MainActor in
             try? await Task.sleep(for: .seconds(2))
-            withAnimation {
-                cacheCleared = false
-            }
+            withAnimation { cacheCleared = false }
         }
     }
 }
-
-// MARK: - Preview
 
 #Preview {
     SettingsView()
