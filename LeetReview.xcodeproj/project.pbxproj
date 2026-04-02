@@ -36,6 +36,7 @@
 		AEBAB7AA1FBC526514F1ED02 /* GraphQLQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = E34FCF7485814D4312D838D5 /* GraphQLQueries.swift */; };
 		B92F109BFC3482C1604B4D73 /* ProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A15C4CAA8E2A74889168F43D /* ProfileViewModel.swift */; };
 		BB30E80396C4A6F0E006194C /* LeetReviewApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CFFEE765BFC60FC1F909395 /* LeetReviewApp.swift */; };
+		809A063F261BA005F98E6C1B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FBB89814F5DB692DB9BF945B /* Assets.xcassets */; };
 		BCF27FA388B49649B5DA90D3 /* Date+Relative.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F7529E171EB72BAA7B425D /* Date+Relative.swift */; };
 		C0ED85BD0DAEE1BC3C383ED1 /* CodeViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 296551FA7A866294B4DF8B62 /* CodeViewerView.swift */; };
 		C4060E6B5A657A60680D513B /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6DB23936831C5B860458D6 /* ProfileView.swift */; };
@@ -73,6 +74,7 @@
 		3629885D409F1EDD9F5F03C5 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		37B600B36AE60257CEBF8267 /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
 		4CFFEE765BFC60FC1F909395 /* LeetReviewApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeetReviewApp.swift; sourceTree = "<group>"; };
+		FBB89814F5DB692DB9BF945B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = LeetReview/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		4D32E23CC7D08150130C2057 /* LeetCodeAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeetCodeAPI.swift; sourceTree = "<group>"; };
 		583F3D3A15DD58C928246F98 /* StatCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatCard.swift; sourceTree = "<group>"; };
 		5F548ECB3EDD422B43D5EA35 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
@@ -159,6 +161,8 @@
 			children = (
 				3629885D409F1EDD9F5F03C5 /* ContentView.swift */,
 				4CFFEE765BFC60FC1F909395 /* LeetReviewApp.swift */,
+			
+				FBB89814F5DB692DB9BF945B /* Assets.xcassets */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -457,6 +461,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				809A063F261BA005F98E6C1B /* Assets.xcassets in Resources */,
 				ACA9EA034443616E7C165387 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
