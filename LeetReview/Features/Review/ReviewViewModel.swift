@@ -70,7 +70,7 @@ final class ReviewViewModel {
         isFlipped = true
 
         // Check cache first
-        if let cachedCode = CacheManager.shared.get(key: "review_code_\(item.titleSlug)", as: CachedSubmissionCode.self) {
+        if let cachedCode = await CacheManager.shared.get(key: "review_code_\(item.titleSlug)", as: CachedSubmissionCode.self) {
             currentCode = cachedCode.code
             currentLang = cachedCode.lang
             return
@@ -99,7 +99,7 @@ final class ReviewViewModel {
 
                 // Cache for offline access
                 let cached = CachedSubmissionCode(code: detail.code, lang: detail.lang)
-                CacheManager.shared.cache(key: "review_code_\(item.titleSlug)", value: cached)
+                await CacheManager.shared.cache(key: "review_code_\(item.titleSlug)", value: cached)
             } else {
                 currentCode = "// No submissions found for this problem"
                 currentLang = nil

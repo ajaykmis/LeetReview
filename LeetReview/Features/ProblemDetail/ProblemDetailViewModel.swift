@@ -92,7 +92,7 @@ final class ProblemDetailViewModel {
 
         // Check cache first
         let cacheKey = CacheManager.problemDetailKey(titleSlug)
-        if let cached = CacheManager.shared.get(key: cacheKey, as: ProblemDetail.self) {
+        if let cached = await CacheManager.shared.get(key: cacheKey, as: ProblemDetail.self) {
             detail = cached
             if let inlineHints = cached.hints, !inlineHints.isEmpty {
                 hints = inlineHints
@@ -103,7 +103,7 @@ final class ProblemDetailViewModel {
             Task {
                 if let fresh = try? await LeetCodeAPI.shared.fetchProblemDetail(titleSlug: titleSlug) {
                     detail = fresh
-                    CacheManager.shared.cache(key: cacheKey, value: fresh)
+                    await CacheManager.shared.cache(key: cacheKey, value: fresh)
                     if let inlineHints = fresh.hints, !inlineHints.isEmpty {
                         hints = inlineHints
                         loadedSections.insert(.hints)
@@ -116,7 +116,7 @@ final class ProblemDetailViewModel {
         do {
             let fetchedDetail = try await LeetCodeAPI.shared.fetchProblemDetail(titleSlug: titleSlug)
             detail = fetchedDetail
-            CacheManager.shared.cache(key: cacheKey, value: fetchedDetail)
+            await CacheManager.shared.cache(key: cacheKey, value: fetchedDetail)
             // Hints come inline with the detail response
             if let inlineHints = fetchedDetail.hints, !inlineHints.isEmpty {
                 hints = inlineHints

@@ -33,10 +33,30 @@ struct LoginWebView: UIViewRepresentable {
             self.onLoginSuccess = onLoginSuccess
         }
 
+        // Restrict navigation to leetcode.com domains only
+        func webView(
+            _ webView: WKWebView,
+            decidePolicyFor navigationAction: WKNavigationAction,
+            decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+        ) {
+            guard let host = navigationAction.request.url?.host?.lowercased() else {
+                decisionHandler(.allow)
+                return
+            }
+            if host == "leetcode.com" || host.hasSuffix(".leetcode.com") {
+                decisionHandler(.allow)
+            } else {
+                decisionHandler(.cancel)
+            }
+        }
+
         func webView(
             _ webView: WKWebView,
             didFinish navigation: WKNavigation!
         ) {
+            // Only check for cookies after navigating away from the login page
+            guard let currentURL = webView.url,
+                  currentURL.path != "/accounts/login/" else { return }
             Task { @MainActor in
                 await checkForAuthCookies(in: webView)
             }

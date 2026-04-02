@@ -1,6 +1,7 @@
 import Foundation
 import KeychainAccess
 import Observation
+@preconcurrency import WebKit
 
 @Observable
 @MainActor
@@ -15,6 +16,7 @@ final class AuthManager {
     }
 
     private nonisolated(unsafe) static let keychain = Keychain(service: "com.leetreview.app")
+        .accessibility(.whenPasscodeSetThisDeviceOnly)
     private nonisolated static let sessionKey = "LEETCODE_SESSION"
     private nonisolated static let csrfKey = "csrftoken"
     private nonisolated static let usernameKey = "username"
@@ -82,6 +84,11 @@ final class AuthManager {
 
     func logout() {
         clearCredentials()
+        // Clear WebView cookies to prevent stale session
+        WKWebsiteDataStore.default().removeData(
+            ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(),
+            modifiedSince: .distantPast
+        ) {}
         isLoggedIn = false
         username = nil
         isReadOnly = false

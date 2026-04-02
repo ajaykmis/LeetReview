@@ -347,13 +347,8 @@ struct SettingsView: View {
     private func clearCache() {
         URLCache.shared.removeAllCachedResponses()
 
-        let tmpDir = FileManager.default.temporaryDirectory
-        if let files = try? FileManager.default.contentsOfDirectory(
-            at: tmpDir, includingPropertiesForKeys: nil
-        ) {
-            for file in files {
-                try? FileManager.default.removeItem(at: file)
-            }
+        Task {
+            await CacheManager.shared.clearAll()
         }
 
         withAnimation { cacheCleared = true }

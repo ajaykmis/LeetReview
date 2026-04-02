@@ -843,6 +843,7 @@ struct ProblemHTMLView: UIViewRepresentable {
         <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
         <meta name="color-scheme" content="light dark">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src https: data:; script-src 'unsafe-inline';">
         <style>
             * { box-sizing: border-box; }
             body {
@@ -918,10 +919,14 @@ struct ProblemHTMLView: UIViewRepresentable {
             decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
         ) {
             if navigationAction.navigationType == .linkActivated,
-               let url = navigationAction.request.url {
+               let url = navigationAction.request.url,
+               url.scheme == "https" {
                 Task { @MainActor in
                     UIApplication.shared.open(url)
                 }
+                decisionHandler(.cancel)
+            } else if navigationAction.navigationType == .linkActivated {
+                // Block non-https links (tel:, sms:, javascript:, etc.)
                 decisionHandler(.cancel)
             } else {
                 decisionHandler(.allow)

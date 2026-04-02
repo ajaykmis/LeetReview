@@ -322,11 +322,14 @@ actor LeetCodeAPI {
         testCases: String,
         submitCode: Bool
     ) async throws -> CodeExecutionHandle {
-        let path = "/problems/\(questionTitleSlug)/\(submitCode ? "submit" : "interpret_solution")/"
-        let url = URL(string: path, relativeTo: baseURL)!.absoluteURL
+        let sanitizedSlug = questionTitleSlug.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? questionTitleSlug
+        let path = "/problems/\(sanitizedSlug)/\(submitCode ? "submit" : "interpret_solution")/"
+        guard let url = URL(string: path, relativeTo: baseURL)?.absoluteURL else {
+            throw APIError.noData
+        }
         var request = authenticatedRequest(
             url: url,
-            referer: "https://leetcode.com/problems/\(questionTitleSlug)/"
+            referer: "https://leetcode.com/problems/\(sanitizedSlug)/"
         )
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -353,7 +356,10 @@ actor LeetCodeAPI {
     }
 
     func checkSubmission(id: String) async throws -> SubmissionCheckResult {
-        let url = URL(string: "/submissions/detail/\(id)/check/", relativeTo: baseURL)!.absoluteURL
+        let sanitizedId = id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? id
+        guard let url = URL(string: "/submissions/detail/\(sanitizedId)/check/", relativeTo: baseURL)?.absoluteURL else {
+            throw APIError.noData
+        }
         let request = authenticatedRequest(url: url, referer: nil)
         let data = try await sendJSONRequest(request)
         let json = try JSONSerialization.data(withJSONObject: data)

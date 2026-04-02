@@ -49,6 +49,9 @@ struct LeetReviewApp: App {
         let pathComponents = url.pathComponents.filter { $0 != "/" }
         guard let slug = pathComponents.first, !slug.isEmpty else { return }
 
+        // Validate slug: only allow lowercase alphanumeric and hyphens
+        guard slug.range(of: "^[a-z0-9-]+$", options: .regularExpression) != nil else { return }
+
         reviewViewModel.navigateToProblem(slug: slug)
     }
 }
