@@ -256,6 +256,7 @@ struct ProblemDetailView: View {
                     }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(Theme.Spacing.lg)
             .background(Theme.Colors.card)
             .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
