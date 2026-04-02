@@ -17,6 +17,7 @@ struct DashboardView: View {
                         } else {
                             dailyChallengeSection
                             quickStatsSection
+                            AdBannerView()
                             toolkitSection
                             upcomingContestsSection
                             recentActivitySection

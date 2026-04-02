@@ -20,22 +20,18 @@ struct ContentView: View {
 
 struct MainTabView: View {
     var body: some View {
-        VStack(spacing: 0) {
-            TabView {
-                DashboardView()
-                    .tabItem { Label("Dashboard", systemImage: "house.fill") }
-                ProblemListView()
-                    .tabItem { Label("Problems", systemImage: "list.bullet.rectangle.fill") }
-                ReviewSessionView()
-                    .tabItem { Label("Review", systemImage: "arrow.counterclockwise.circle.fill") }
-                ProfileView()
-                    .tabItem { Label("Profile", systemImage: "person.fill") }
-                SettingsView()
-                    .tabItem { Label("Settings", systemImage: "gearshape.fill") }
-            }
-            .tint(Theme.Colors.accent)
-
-            AdBannerView()
+        TabView {
+            DashboardView()
+                .tabItem { Label("Dashboard", systemImage: "house.fill") }
+            ProblemListView()
+                .tabItem { Label("Problems", systemImage: "list.bullet.rectangle.fill") }
+            ReviewSessionView()
+                .tabItem { Label("Review", systemImage: "arrow.counterclockwise.circle.fill") }
+            ProfileView()
+                .tabItem { Label("Profile", systemImage: "person.fill") }
+            SettingsView()
+                .tabItem { Label("Settings", systemImage: "gearshape.fill") }
         }
+        .tint(Theme.Colors.accent)
     }
 }

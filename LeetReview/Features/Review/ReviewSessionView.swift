@@ -153,6 +153,9 @@ struct ReviewSessionView: View {
             }
             .padding(.horizontal, Theme.Spacing.xl)
 
+            AdBannerView()
+                .padding(.horizontal, Theme.Spacing.xl)
+
             Spacer()
 
             Button {
