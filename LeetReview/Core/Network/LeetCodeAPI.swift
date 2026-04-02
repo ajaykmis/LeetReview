@@ -931,22 +931,38 @@ struct SubmissionCheckResult: Decodable {
         memory = try container.decodeIfPresent(String.self, forKey: .memory)
         totalCorrect = try container.decodeIfPresent(Int.self, forKey: .totalCorrect)
         totalTestcases = try container.decodeIfPresent(Int.self, forKey: .totalTestcases)
-        compareResult = try container.decodeIfPresent(String.self, forKey: .compareResult)
-        codeAnswer = try container.decodeIfPresent([String].self, forKey: .codeAnswer)
-        expectedCodeAnswer = try container.decodeIfPresent([String].self, forKey: .expectedCodeAnswer)
-        inputFormatted = try container.decodeIfPresent(String.self, forKey: .inputFormatted)
-        stdOutputList = try container.decodeIfPresent([String].self, forKey: .stdOutputList)
-        compileError = try container.decodeIfPresent(String.self, forKey: .compileError)
-        fullCompileError = try container.decodeIfPresent(String.self, forKey: .fullCompileError)
-        runtimeError = try container.decodeIfPresent(String.self, forKey: .runtimeError)
-        fullRuntimeError = try container.decodeIfPresent(String.self, forKey: .fullRuntimeError)
-        statusRuntime = try container.decodeIfPresent(String.self, forKey: .statusRuntime)
-        statusMemory = try container.decodeIfPresent(String.self, forKey: .statusMemory)
-        runtimePercentile = try container.decodeIfPresent(Double.self, forKey: .runtimePercentile)
-        memoryPercentile = try container.decodeIfPresent(Double.self, forKey: .memoryPercentile)
-        correctAnswer = try container.decodeIfPresent(Bool.self, forKey: .correctAnswer)
-        lastTestcase = try container.decodeIfPresent(String.self, forKey: .lastTestcase)
-        expectedOutput = try container.decodeIfPresent(String.self, forKey: .expectedOutput)
+        compareResult = try? container.decodeIfPresent(String.self, forKey: .compareResult)
+        inputFormatted = try? container.decodeIfPresent(String.self, forKey: .inputFormatted)
+        stdOutputList = try? container.decodeIfPresent([String].self, forKey: .stdOutputList)
+        compileError = try? container.decodeIfPresent(String.self, forKey: .compileError)
+        fullCompileError = try? container.decodeIfPresent(String.self, forKey: .fullCompileError)
+        runtimeError = try? container.decodeIfPresent(String.self, forKey: .runtimeError)
+        fullRuntimeError = try? container.decodeIfPresent(String.self, forKey: .fullRuntimeError)
+        statusRuntime = try? container.decodeIfPresent(String.self, forKey: .statusRuntime)
+        statusMemory = try? container.decodeIfPresent(String.self, forKey: .statusMemory)
+        runtimePercentile = try? container.decodeIfPresent(Double.self, forKey: .runtimePercentile)
+        memoryPercentile = try? container.decodeIfPresent(Double.self, forKey: .memoryPercentile)
+        correctAnswer = try? container.decodeIfPresent(Bool.self, forKey: .correctAnswer)
+        lastTestcase = try? container.decodeIfPresent(String.self, forKey: .lastTestcase)
+        expectedOutput = try? container.decodeIfPresent(String.self, forKey: .expectedOutput)
+
+        // code_answer and expected_code_answer can be [String] or other JSON types
+        // Try [String] first, then try decoding as generic JSON array and stringify
+        if let arr = try? container.decodeIfPresent([String].self, forKey: .codeAnswer) {
+            codeAnswer = arr
+        } else if let anyArr = try? container.decodeIfPresent([AnyCodable].self, forKey: .codeAnswer) {
+            codeAnswer = anyArr.map(\.stringValue)
+        } else {
+            codeAnswer = nil
+        }
+
+        if let arr = try? container.decodeIfPresent([String].self, forKey: .expectedCodeAnswer) {
+            expectedCodeAnswer = arr
+        } else if let anyArr = try? container.decodeIfPresent([AnyCodable].self, forKey: .expectedCodeAnswer) {
+            expectedCodeAnswer = anyArr.map(\.stringValue)
+        } else {
+            expectedCodeAnswer = nil
+        }
 
         // code_output can be either a String or [String] from the API
         if let array = try? container.decodeIfPresent([String].self, forKey: .codeOutput) {
@@ -955,6 +971,28 @@ struct SubmissionCheckResult: Decodable {
             codeOutput = [single]
         } else {
             codeOutput = nil
+        }
+    }
+}
+
+/// Decodes any JSON value and provides a string representation.
+private struct AnyCodable: Decodable {
+    let stringValue: String
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let str = try? container.decode(String.self) {
+            stringValue = str
+        } else if let int = try? container.decode(Int.self) {
+            stringValue = String(int)
+        } else if let double = try? container.decode(Double.self) {
+            stringValue = String(double)
+        } else if let bool = try? container.decode(Bool.self) {
+            stringValue = String(bool)
+        } else if container.decodeNil() {
+            stringValue = "null"
+        } else {
+            stringValue = "?"
         }
     }
 }
