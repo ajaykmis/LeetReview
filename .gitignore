@@ -12,6 +12,9 @@ build/
 .build/
 Packages/
 
+# Secrets
+GoogleService-Info.plist
+
 # OS
 .DS_Store
 *.swp

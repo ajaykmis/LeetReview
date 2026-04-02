@@ -470,12 +470,12 @@ struct ProblemListResponse: Decodable {
     let problemsetQuestionList: ProblemListResult
 }
 
-struct ProblemListResult: Decodable {
+struct ProblemListResult: Codable {
     let total: Int
     let questions: [Problem]
 }
 
-struct Problem: Decodable, Identifiable {
+struct Problem: Codable, Identifiable {
     var id: String { titleSlug }
     let titleSlug: String
     let title: String
@@ -483,6 +483,10 @@ struct Problem: Decodable, Identifiable {
     let topicTags: [TopicTag]
     let acRate: Double
     let status: String?
+
+    enum CodingKeys: String, CodingKey {
+        case titleSlug, title, difficulty, topicTags, acRate, status
+    }
 }
 
 struct TopicTag: Codable {

@@ -52,6 +52,11 @@ final class ProblemDetailViewModel {
     private(set) var isLoadingSimilar = false
     private(set) var similarError: String?
 
+    // MARK: - Offline support
+
+    private(set) var isSavedOffline = false
+    private var offlineManager: OfflineManager?
+
     // MARK: - Review integration
 
     private(set) var addedToReview = false
@@ -78,6 +83,11 @@ final class ProblemDetailViewModel {
         self.title = title
     }
 
+    func configureOffline(offlineManager: OfflineManager) {
+        self.offlineManager = offlineManager
+        isSavedOffline = offlineManager.isSaved(titleSlug: titleSlug)
+    }
+
     func configureReview(modelContext: ModelContext) {
         self.reviewStore = ReviewStore(modelContext: modelContext)
         checkReviewStatus()
@@ -99,14 +109,17 @@ final class ProblemDetailViewModel {
                 loadedSections.insert(.hints)
             }
             isLoadingDetail = false
-            // Refresh in background
-            Task {
-                if let fresh = try? await LeetCodeAPI.shared.fetchProblemDetail(titleSlug: titleSlug) {
-                    detail = fresh
-                    await CacheManager.shared.cache(key: cacheKey, value: fresh)
-                    if let inlineHints = fresh.hints, !inlineHints.isEmpty {
-                        hints = inlineHints
-                        loadedSections.insert(.hints)
+            // Skip background refresh when offline
+            let isCurrentlyOffline = offlineManager?.isOffline ?? false
+            if !isCurrentlyOffline {
+                Task {
+                    if let fresh = try? await LeetCodeAPI.shared.fetchProblemDetail(titleSlug: titleSlug) {
+                        detail = fresh
+                        await CacheManager.shared.cache(key: cacheKey, value: fresh)
+                        if let inlineHints = fresh.hints, !inlineHints.isEmpty {
+                            hints = inlineHints
+                            loadedSections.insert(.hints)
+                        }
                     }
                 }
             }
@@ -239,6 +252,26 @@ final class ProblemDetailViewModel {
     private func checkReviewStatus() {
         guard let store = reviewStore else { return }
         addedToReview = store.findItem(bySlug: titleSlug) != nil
+    }
+
+    // MARK: - Offline
+
+    func toggleSaveOffline() {
+        guard let offlineManager else { return }
+        if isSavedOffline {
+            offlineManager.removeSavedProblem(titleSlug: titleSlug)
+            isSavedOffline = false
+        } else {
+            offlineManager.saveProblemForOffline(titleSlug: titleSlug)
+            isSavedOffline = true
+            // Ensure the detail is fully cached
+            if let detail {
+                let cacheKey = CacheManager.problemDetailKey(titleSlug)
+                Task {
+                    await CacheManager.shared.cache(key: cacheKey, value: detail)
+                }
+            }
+        }
     }
 
     // MARK: - Computed helpers

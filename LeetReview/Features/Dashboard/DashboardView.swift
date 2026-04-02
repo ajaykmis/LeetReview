@@ -3,6 +3,7 @@ import SwiftUI
 struct DashboardView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(ThemeManager.self) private var themeManager
+    @Environment(ContestReminderService.self) private var reminderService
     @State private var viewModel = DashboardViewModel()
 
     var body: some View {
@@ -204,7 +205,16 @@ struct DashboardView: View {
                 sectionHeader(title: "Upcoming Contests", icon: "trophy.fill")
 
                 ForEach(viewModel.upcomingContests.prefix(3)) { contest in
-                    ContestRow(contest: contest)
+                    ContestRow(
+                        contest: contest,
+                        reminderSet: reminderService.isReminderSet(for: contest.id),
+                        onToggleReminder: {
+                            Task {
+                                let startTime = Date.fromTimestamp(contest.startTime)
+                                await reminderService.toggleReminder(for: contest, startTime: startTime)
+                            }
+                        }
+                    )
                 }
             }
         }
@@ -250,6 +260,8 @@ struct DashboardView: View {
 
 private struct ContestRow: View {
     let contest: Contest
+    let reminderSet: Bool
+    let onToggleReminder: () -> Void
 
     private var startDate: Date {
         .fromTimestamp(contest.startTime)
@@ -273,6 +285,20 @@ private struct ContestRow: View {
             }
 
             Spacer()
+
+            Button(action: onToggleReminder) {
+                Image(systemName: reminderSet ? "bell.fill" : "bell")
+                    .font(.caption)
+                    .foregroundStyle(reminderSet ? Theme.Colors.accent : Theme.Colors.textSecondary)
+                    .padding(Theme.Spacing.sm)
+                    .background(
+                        reminderSet
+                            ? Theme.Colors.accent.opacity(0.15)
+                            : Theme.Colors.background.opacity(0.5)
+                    )
+                    .clipShape(Circle())
+            }
+            .buttonStyle(.plain)
 
             Text(countdown)
                 .font(.caption.bold().monospacedDigit())

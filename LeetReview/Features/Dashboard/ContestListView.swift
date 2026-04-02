@@ -1,12 +1,12 @@
 import SwiftUI
-import UserNotifications
 
 struct ContestListView: View {
     let contests: [Contest]
-    @State private var scheduledReminderIDs: Set<String> = []
-    @State private var notificationDenied = false
+    @Environment(ContestReminderService.self) private var reminderService
 
     var body: some View {
+        @Bindable var service = reminderService
+
         ZStack {
             Theme.Colors.background.ignoresSafeArea()
 
@@ -22,8 +22,13 @@ struct ContestListView: View {
                         ForEach(contests) { contest in
                             ContestReminderCard(
                                 contest: contest,
-                                reminderSet: scheduledReminderIDs.contains(contest.id),
-                                onToggle: { Task { await toggleReminder(for: contest) } }
+                                reminderSet: reminderService.isReminderSet(for: contest.id),
+                                onToggle: {
+                                    Task {
+                                        let startTime = Date.fromTimestamp(contest.startTime)
+                                        await reminderService.toggleReminder(for: contest, startTime: startTime)
+                                    }
+                                }
                             )
                         }
                     }
@@ -34,52 +39,12 @@ struct ContestListView: View {
         .navigationTitle("Contests")
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(Theme.Colors.background, for: .navigationBar)
-        .task { await loadScheduledReminders() }
-        .alert("Notifications Disabled", isPresented: $notificationDenied) {
+        .task { await reminderService.loadScheduledReminders() }
+        .alert("Notifications Disabled", isPresented: $service.notificationDenied) {
             Button("OK", role: .cancel) {}
         } message: {
             Text("Allow notifications to receive contest reminders.")
         }
-    }
-
-    private func toggleReminder(for contest: Contest) async {
-        if scheduledReminderIDs.contains(contest.id) {
-            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [contest.id])
-            scheduledReminderIDs.remove(contest.id)
-            return
-        }
-
-        let granted = try? await UNUserNotificationCenter.current()
-            .requestAuthorization(options: [.alert, .badge, .sound])
-        guard granted == true else {
-            notificationDenied = true
-            return
-        }
-
-        let triggerDate = max(contest.startTime - 30 * 60, Int(Date().timeIntervalSince1970) + 5)
-        let dateComponents = Calendar.current.dateComponents(
-            [.year, .month, .day, .hour, .minute],
-            from: Date(timeIntervalSince1970: TimeInterval(triggerDate))
-        )
-
-        let content = UNMutableNotificationContent()
-        content.title = contest.title
-        content.body = "Contest starts soon."
-        content.sound = .default
-
-        let request = UNNotificationRequest(
-            identifier: contest.id,
-            content: content,
-            trigger: UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
-        )
-
-        try? await UNUserNotificationCenter.current().add(request)
-        scheduledReminderIDs.insert(contest.id)
-    }
-
-    private func loadScheduledReminders() async {
-        let pending = await UNUserNotificationCenter.current().pendingNotificationRequests()
-        scheduledReminderIDs = Set(pending.map(\.identifier))
     }
 }
 

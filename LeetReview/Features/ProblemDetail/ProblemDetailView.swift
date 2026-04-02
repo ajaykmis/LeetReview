@@ -4,6 +4,7 @@ import SwiftUI
 struct ProblemDetailView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(ThemeManager.self) private var themeManager
+    @Environment(OfflineManager.self) private var offlineManager
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel: ProblemDetailViewModel
     @State private var problemHTMLHeight: CGFloat = 320
@@ -34,6 +35,7 @@ struct ProblemDetailView: View {
         .toolbarBackground(Theme.Colors.background, for: .navigationBar)
         .toolbarColorScheme(themeManager.toolbarColorScheme, for: .navigationBar)
         .task {
+            viewModel.configureOffline(offlineManager: offlineManager)
             viewModel.configureReview(modelContext: modelContext)
             await viewModel.loadAll()
         }
@@ -151,6 +153,29 @@ struct ProblemDetailView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             .disabled(viewModel.addedToReview)
+            .buttonStyle(.plain)
+
+            // Save Offline button
+            Button {
+                viewModel.toggleSaveOffline()
+            } label: {
+                HStack(spacing: Theme.Spacing.sm) {
+                    Image(systemName: viewModel.isSavedOffline
+                        ? "checkmark.circle.fill"
+                        : "arrow.down.circle")
+                    Text(viewModel.isSavedOffline ? "Saved Offline" : "Save Offline")
+                        .font(.subheadline.bold())
+                }
+                .foregroundStyle(viewModel.isSavedOffline ? Theme.Colors.accent : Theme.Colors.text)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, Theme.Spacing.sm)
+                .background(
+                    viewModel.isSavedOffline
+                        ? Theme.Colors.accent.opacity(0.12)
+                        : Theme.Colors.background.opacity(0.7)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
             .buttonStyle(.plain)
         }
         .padding(Theme.Spacing.lg)

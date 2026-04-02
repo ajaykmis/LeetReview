@@ -4,6 +4,7 @@ struct SettingsView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(ThemeManager.self) private var themeManager
     @Environment(StoreManager.self) private var storeManager
+    @Environment(ContestReminderService.self) private var reminderService
     @State private var showingLogoutConfirmation = false
     @State private var showingClearCacheConfirmation = false
     @State private var cacheCleared = false
@@ -141,6 +142,21 @@ struct SettingsView: View {
             }
             .padding(.horizontal, Theme.Spacing.lg)
             .padding(.vertical, Theme.Spacing.md)
+
+            Divider().padding(.leading, 52)
+
+            settingRow(icon: "bell.badge", iconColor: Theme.Colors.accent, title: "Contest Reminders") {
+                Picker("", selection: Binding(
+                    get: { reminderService.defaultReminderMinutes },
+                    set: { reminderService.defaultReminderMinutes = $0 }
+                )) {
+                    Text("15 min before").tag(15)
+                    Text("30 min before").tag(30)
+                    Text("1 hour before").tag(60)
+                }
+                .pickerStyle(.menu)
+                .tint(Theme.Colors.accent)
+            }
         }
         .background(Theme.Colors.card)
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))

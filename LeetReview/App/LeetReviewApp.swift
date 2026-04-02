@@ -19,6 +19,8 @@ struct LeetReviewApp: App {
     @State private var themeManager = ThemeManager()
     @State private var reviewViewModel = ReviewViewModel()
     @State private var storeManager = StoreManager()
+    @State private var offlineManager = OfflineManager()
+    @State private var contestReminderService = ContestReminderService()
 
     var body: some Scene {
         WindowGroup {
@@ -26,6 +28,8 @@ struct LeetReviewApp: App {
                 .environment(authManager)
                 .environment(themeManager)
                 .environment(storeManager)
+                .environment(offlineManager)
+                .environment(contestReminderService)
                 .preferredColorScheme(themeManager.preferredColorScheme)
                 .onOpenURL { url in
                     handleURLScheme(url)
