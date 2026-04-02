@@ -361,9 +361,13 @@ actor LeetCodeAPI {
             throw APIError.noData
         }
         let request = authenticatedRequest(url: url, referer: nil)
-        let data = try await sendJSONRequest(request)
-        let json = try JSONSerialization.data(withJSONObject: data)
-        return try JSONDecoder().decode(SubmissionCheckResult.self, from: json)
+        // Decode directly from raw response data (not via JSONSerialization round-trip)
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            throw APIError.noData
+        }
+        return try JSONDecoder().decode(SubmissionCheckResult.self, from: data)
     }
 
     private func authenticatedRequest(url: URL, referer: String?) -> URLRequest {
