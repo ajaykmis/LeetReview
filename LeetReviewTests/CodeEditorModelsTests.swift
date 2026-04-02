@@ -67,14 +67,15 @@ final class CodeEditorModelsTests: XCTestCase {
         XCTAssertEqual(CodeSubmissionStatus.accepted.rawValue, "Accepted")
         XCTAssertEqual(CodeSubmissionStatus.wrongAnswer.rawValue, "Wrong Answer")
         XCTAssertEqual(CodeSubmissionStatus.runtimeError.rawValue, "Runtime Error")
+        XCTAssertEqual(CodeSubmissionStatus.compileError.rawValue, "Compile Error")
         XCTAssertEqual(CodeSubmissionStatus.loginRequired.rawValue, "Login Required")
     }
 
     // MARK: - CodePerformanceSnapshot
 
     func testPerformanceSnapshotHashable() {
-        let p1 = CodePerformanceSnapshot(runtime: "10 ms", memory: "5 MB", percentile: "Beats 90%")
-        let p2 = CodePerformanceSnapshot(runtime: "10 ms", memory: "5 MB", percentile: "Beats 90%")
+        let p1 = CodePerformanceSnapshot(runtime: "10 ms", memory: "5 MB", runtimePercentile: 90.0, memoryPercentile: 85.0)
+        let p2 = CodePerformanceSnapshot(runtime: "10 ms", memory: "5 MB", runtimePercentile: 90.0, memoryPercentile: 85.0)
         XCTAssertEqual(p1, p2)
     }
 }

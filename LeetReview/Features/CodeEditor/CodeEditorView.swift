@@ -8,6 +8,7 @@ struct CodeEditorView: View {
     @State private var showSubmitResult = false
     @State private var runResultVersion = 0
     @State private var submitResultVersion = 0
+    @State private var selectedRunCaseIndex = 0
 
     init(
         problem: CodeEditorProblemSnapshot,
@@ -286,31 +287,125 @@ struct CodeEditorView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Theme.Spacing.md) {
                     if let result = viewModel.runResult {
+                        // Status banner with pass/fail count and runtime
                         StatusBanner(
                             title: result.status.rawValue,
-                            subtitle: "\(result.completedCaseCount) / \(result.totalCaseCount) cases",
+                            subtitle: {
+                                var parts = ["\(result.completedCaseCount) / \(result.totalCaseCount) cases"]
+                                if let rt = result.runtime { parts.append(rt) }
+                                return parts.joined(separator: "  |  ")
+                            }(),
                             tint: executionTint(for: result.status)
                         )
 
-                        CodeBlock(
-                            code: result.consoleOutput,
-                            language: "Console",
-                            showCopyButton: false
-                        )
-
-                        ForEach(result.issues) { issue in
-                            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                                Text(issue.title)
+                        // Compile error
+                        if let compileErr = result.compileError, !compileErr.isEmpty {
+                            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                                Text("Compile Error")
                                     .font(.subheadline.weight(.semibold))
-                                    .foregroundStyle(Theme.Colors.text)
-                                Text(issue.detail)
-                                    .font(.caption)
-                                    .foregroundStyle(Theme.Colors.textSecondary)
+                                    .foregroundStyle(Theme.Colors.hard)
+                                Text(compileErr)
+                                    .font(.system(.caption, design: .monospaced))
+                                    .foregroundStyle(Theme.Colors.hard)
+                                    .textSelection(.enabled)
                             }
                             .padding(Theme.Spacing.md)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Theme.Colors.card)
+                            .background(Theme.Colors.hard.opacity(0.08))
                             .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+
+                        // Runtime error
+                        if let runtimeErr = result.runtimeError, !runtimeErr.isEmpty {
+                            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                                Text("Runtime Error")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(Theme.Colors.hard)
+                                Text(runtimeErr)
+                                    .font(.system(.caption, design: .monospaced))
+                                    .foregroundStyle(Theme.Colors.hard)
+                                    .textSelection(.enabled)
+                            }
+                            .padding(Theme.Spacing.md)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Theme.Colors.hard.opacity(0.08))
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+
+                        // Test case tabs and details
+                        if !result.testCaseResults.isEmpty {
+                            // Horizontal scrollable case tabs
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: Theme.Spacing.sm) {
+                                    ForEach(Array(result.testCaseResults.enumerated()), id: \.element.id) { index, caseResult in
+                                        Button {
+                                            selectedRunCaseIndex = index
+                                        } label: {
+                                            HStack(spacing: Theme.Spacing.xs) {
+                                                Image(systemName: caseResult.passed ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                                    .font(.caption2)
+                                                    .foregroundStyle(caseResult.passed ? Theme.Colors.easy : Theme.Colors.hard)
+                                                Text("Case \(index + 1)")
+                                                    .font(.caption.weight(.semibold))
+                                            }
+                                            .foregroundStyle(
+                                                selectedRunCaseIndex == index
+                                                ? Theme.Colors.background
+                                                : Theme.Colors.text
+                                            )
+                                            .padding(.horizontal, Theme.Spacing.md)
+                                            .padding(.vertical, Theme.Spacing.sm)
+                                            .background(
+                                                selectedRunCaseIndex == index
+                                                ? Theme.Colors.accent
+                                                : Theme.Colors.card
+                                            )
+                                            .clipShape(Capsule())
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Selected case details
+                            if selectedRunCaseIndex < result.testCaseResults.count {
+                                let selected = result.testCaseResults[selectedRunCaseIndex]
+
+                                VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+                                    // Input
+                                    if !selected.input.isEmpty {
+                                        runCaseField(title: "Input", value: selected.input, color: Theme.Colors.textSecondary)
+                                    }
+
+                                    // stdout
+                                    if !selected.stdOutput.isEmpty {
+                                        runCaseField(title: "stdout", value: selected.stdOutput, color: Theme.Colors.textSecondary)
+                                    }
+
+                                    // Your Output
+                                    if !selected.actualOutput.isEmpty {
+                                        runCaseField(
+                                            title: "Your Output",
+                                            value: selected.actualOutput,
+                                            color: selected.passed ? Theme.Colors.easy : Theme.Colors.hard
+                                        )
+                                    }
+
+                                    // Expected
+                                    if !selected.expectedOutput.isEmpty {
+                                        runCaseField(title: "Expected", value: selected.expectedOutput, color: Theme.Colors.easy)
+                                    }
+                                }
+                                .padding(Theme.Spacing.md)
+                                .background(Theme.Colors.card)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                            }
+                        } else if result.compileError == nil && result.runtimeError == nil {
+                            // Fallback status message when no test case results and no errors
+                            CodeBlock(
+                                code: result.statusMessage,
+                                language: "Console",
+                                showCopyButton: false
+                            )
                         }
                     }
                 }
@@ -328,6 +423,22 @@ struct CodeEditorView: View {
         .presentationDetents([.medium, .large])
     }
 
+    private func runCaseField(title: String, value: String, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Theme.Colors.textSecondary)
+            Text(value)
+                .font(.system(.caption, design: .monospaced))
+                .foregroundStyle(color)
+                .textSelection(.enabled)
+                .padding(Theme.Spacing.sm)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Theme.Colors.background)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+    }
+
     // MARK: - Submit Result Sheet
 
     private var submitResultSheet: some View {
@@ -341,20 +452,121 @@ struct CodeEditorView: View {
                             tint: submissionTint(for: result.status)
                         )
 
-                        HStack(spacing: Theme.Spacing.md) {
-                            MetricCard(title: "Cases", value: "\(result.passedCaseCount)/\(result.totalCaseCount)", tint: Theme.Colors.accent)
-                            MetricCard(title: "Runtime", value: result.performance?.runtime ?? "--", tint: Theme.Colors.easy)
-                            MetricCard(title: "Memory", value: result.performance?.memory ?? "--", tint: Theme.Colors.medium)
+                        // Accepted: show performance metrics with percentiles
+                        if result.status == .accepted {
+                            if let perf = result.performance {
+                                HStack(spacing: Theme.Spacing.md) {
+                                    MetricCard(title: "Cases", value: "\(result.passedCaseCount)/\(result.totalCaseCount)", tint: Theme.Colors.accent)
+
+                                    VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                                        Text("Runtime")
+                                            .font(.caption)
+                                            .foregroundStyle(Theme.Colors.textSecondary)
+                                        Text(perf.runtime)
+                                            .font(.subheadline.weight(.semibold))
+                                            .foregroundStyle(Theme.Colors.text)
+                                        if let pct = perf.runtimePercentile {
+                                            Text("Beats \(String(format: "%.1f", pct))%")
+                                                .font(.caption2.weight(.semibold))
+                                                .foregroundStyle(Theme.Colors.easy)
+                                        }
+                                    }
+                                    .padding(Theme.Spacing.md)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(Theme.Colors.easy.opacity(0.12))
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                                    VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                                        Text("Memory")
+                                            .font(.caption)
+                                            .foregroundStyle(Theme.Colors.textSecondary)
+                                        Text(perf.memory)
+                                            .font(.subheadline.weight(.semibold))
+                                            .foregroundStyle(Theme.Colors.text)
+                                        if let pct = perf.memoryPercentile {
+                                            Text("Beats \(String(format: "%.1f", pct))%")
+                                                .font(.caption2.weight(.semibold))
+                                                .foregroundStyle(Theme.Colors.easy)
+                                        }
+                                    }
+                                    .padding(Theme.Spacing.md)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(Theme.Colors.medium.opacity(0.12))
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                                }
+
+                                // Accepted icon
+                                HStack {
+                                    Spacer()
+                                    Image(systemName: "checkmark.seal.fill")
+                                        .font(.largeTitle)
+                                        .foregroundStyle(Theme.Colors.easy)
+                                    Spacer()
+                                }
+                                .padding(.vertical, Theme.Spacing.sm)
+                            }
                         }
 
-                        if let percentile = result.performance?.percentile {
-                            Text(percentile)
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(Theme.Colors.easy)
+                        // Wrong Answer: show failing test case details
+                        if result.status == .wrongAnswer {
+                            HStack(spacing: Theme.Spacing.md) {
+                                MetricCard(title: "Cases", value: "\(result.passedCaseCount)/\(result.totalCaseCount)", tint: Theme.Colors.hard)
+                            }
+
+                            if result.lastTestcaseInput != nil || result.lastExpectedOutput != nil || result.lastCodeOutput != nil {
+                                VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+                                    Text("Failing Test Case")
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(Theme.Colors.hard)
+
+                                    if let input = result.lastTestcaseInput, !input.isEmpty {
+                                        runCaseField(title: "Input", value: input, color: Theme.Colors.textSecondary)
+                                    }
+                                    if let expected = result.lastExpectedOutput, !expected.isEmpty {
+                                        runCaseField(title: "Expected", value: expected, color: Theme.Colors.easy)
+                                    }
+                                    if let actual = result.lastCodeOutput, !actual.isEmpty {
+                                        runCaseField(title: "Your Output", value: actual, color: Theme.Colors.hard)
+                                    }
+                                }
                                 .padding(Theme.Spacing.md)
-                                .frame(maxWidth: .infinity)
-                                .background(Theme.Colors.easy.opacity(0.1))
+                                .background(Theme.Colors.card)
                                 .clipShape(RoundedRectangle(cornerRadius: 12))
+                            }
+                        }
+
+                        // Compile Error
+                        if result.status == .compileError, let compileErr = result.compileError, !compileErr.isEmpty {
+                            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                                Text("Compile Error")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(Theme.Colors.hard)
+                                Text(compileErr)
+                                    .font(.system(.caption, design: .monospaced))
+                                    .foregroundStyle(Theme.Colors.hard)
+                                    .textSelection(.enabled)
+                            }
+                            .padding(Theme.Spacing.md)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Theme.Colors.hard.opacity(0.08))
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+
+                        // Runtime Error
+                        if result.status == .runtimeError, let runtimeErr = result.runtimeError, !runtimeErr.isEmpty {
+                            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                                Text("Runtime Error")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(Theme.Colors.hard)
+                                Text(runtimeErr)
+                                    .font(.system(.caption, design: .monospaced))
+                                    .foregroundStyle(Theme.Colors.hard)
+                                    .textSelection(.enabled)
+                            }
+                            .padding(Theme.Spacing.md)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Theme.Colors.hard.opacity(0.08))
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                     }
                 }
@@ -386,6 +598,7 @@ struct CodeEditorView: View {
         switch status {
         case .accepted: Theme.Colors.easy
         case .wrongAnswer: Theme.Colors.hard
+        case .compileError: Theme.Colors.hard
         case .runtimeError: Theme.Colors.medium
         case .loginRequired: Theme.Colors.accent
         }

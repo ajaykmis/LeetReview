@@ -54,6 +54,28 @@ struct HighlightedCodeEditor: UIViewRepresentable {
         container.backgroundColor = UIColor(Theme.Colors.card)
         container.autoresizingMask = .flexibleWidth
 
+        // Thin top separator line (0.5pt)
+        let separator = UIView()
+        separator.backgroundColor = UIColor(Theme.Colors.textSecondary).withAlphaComponent(0.3)
+        separator.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(separator)
+
+        // Undo button (fixed left)
+        let undoButton = UIButton(type: .system)
+        undoButton.setImage(UIImage(systemName: "arrow.uturn.backward"), for: .normal)
+        undoButton.tintColor = UIColor(Theme.Colors.accent)
+        undoButton.translatesAutoresizingMaskIntoConstraints = false
+        undoButton.addAction(UIAction { _ in textView.undoManager?.undo() }, for: .touchUpInside)
+        container.addSubview(undoButton)
+
+        // Redo button (fixed left, after undo)
+        let redoButton = UIButton(type: .system)
+        redoButton.setImage(UIImage(systemName: "arrow.uturn.forward"), for: .normal)
+        redoButton.tintColor = UIColor(Theme.Colors.accent)
+        redoButton.translatesAutoresizingMaskIntoConstraints = false
+        redoButton.addAction(UIAction { _ in textView.undoManager?.redo() }, for: .touchUpInside)
+        container.addSubview(redoButton)
+
         // Scrollable keys row
         let scrollView = UIScrollView()
         scrollView.showsHorizontalScrollIndicator = false
@@ -70,28 +92,42 @@ struct HighlightedCodeEditor: UIViewRepresentable {
         container.addSubview(doneButton)
 
         NSLayoutConstraint.activate([
+            separator.topAnchor.constraint(equalTo: container.topAnchor),
+            separator.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            separator.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            separator.heightAnchor.constraint(equalToConstant: 0.5),
+
+            undoButton.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 8),
+            undoButton.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+            undoButton.widthAnchor.constraint(equalToConstant: 32),
+
+            redoButton.leadingAnchor.constraint(equalTo: undoButton.trailingAnchor, constant: 4),
+            redoButton.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+            redoButton.widthAnchor.constraint(equalToConstant: 32),
+
             doneButton.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -12),
             doneButton.centerYAnchor.constraint(equalTo: container.centerYAnchor),
             doneButton.widthAnchor.constraint(equalToConstant: 44),
-            scrollView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+
+            scrollView.leadingAnchor.constraint(equalTo: redoButton.trailingAnchor, constant: 4),
             scrollView.trailingAnchor.constraint(equalTo: doneButton.leadingAnchor, constant: -4),
-            scrollView.topAnchor.constraint(equalTo: container.topAnchor),
+            scrollView.topAnchor.constraint(equalTo: separator.bottomAnchor),
             scrollView.bottomAnchor.constraint(equalTo: container.bottomAnchor),
         ])
 
-        // Key definitions: (label, inserted text)
+        // Key definitions: (label, inserted text) — most common coding keys first
         let keys: [(String, String)] = [
             ("TAB", "    "),
+            ("{", "{"),
+            ("}", "}"),
+            ("(", "("),
+            (")", ")"),
+            ("[", "["),
+            ("]", "]"),
             ("=", "="),
             (";", ";"),
             (":", ":"),
             (".", "."),
-            ("(", "("),
-            (")", ")"),
-            ("{", "{"),
-            ("}", "}"),
-            ("[", "["),
-            ("]", "]"),
             ("<", "<"),
             (">", ">"),
             ("\"", "\""),

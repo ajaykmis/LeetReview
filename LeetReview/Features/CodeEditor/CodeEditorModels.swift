@@ -113,18 +113,26 @@ struct CodeExecutionRequest: Sendable {
     let testCases: [CodeEditorTestCase]
 }
 
-struct CodeExecutionIssue: Identifiable, Hashable, Sendable {
+struct TestCaseResult: Identifiable, Sendable {
     let id = UUID()
-    let title: String
-    let detail: String
+    let index: Int
+    let input: String
+    let expectedOutput: String
+    let actualOutput: String
+    let stdOutput: String
+    let passed: Bool
 }
 
 struct CodeExecutionResult: Sendable {
     let status: CodeExecutionStatus
-    let consoleOutput: String
+    let statusMessage: String
     let completedCaseCount: Int
     let totalCaseCount: Int
-    let issues: [CodeExecutionIssue]
+    let testCaseResults: [TestCaseResult]
+    let compileError: String?
+    let runtimeError: String?
+    let runtime: String?
+    let memory: String?
 }
 
 enum CodeExecutionStatus: String, Sendable {
@@ -136,7 +144,8 @@ enum CodeExecutionStatus: String, Sendable {
 struct CodePerformanceSnapshot: Hashable, Sendable {
     let runtime: String
     let memory: String
-    let percentile: String?
+    let runtimePercentile: Double?
+    let memoryPercentile: Double?
 }
 
 struct CodeSubmissionResult: Sendable {
@@ -145,12 +154,18 @@ struct CodeSubmissionResult: Sendable {
     let passedCaseCount: Int
     let totalCaseCount: Int
     let performance: CodePerformanceSnapshot?
+    let lastTestcaseInput: String?
+    let lastExpectedOutput: String?
+    let lastCodeOutput: String?
+    let compileError: String?
+    let runtimeError: String?
 }
 
 enum CodeSubmissionStatus: String, Sendable {
     case accepted = "Accepted"
     case wrongAnswer = "Wrong Answer"
     case runtimeError = "Runtime Error"
+    case compileError = "Compile Error"
     case loginRequired = "Login Required"
 }
 
@@ -201,12 +216,14 @@ extension CodeEditorProblemSnapshot {
 
 private extension ProblemDetail {
     func makeEditorTestCases() -> [CodeEditorTestCase] {
+        let expectedOutputs = parseExpectedOutputsFromHTML()
+
         if let examples = exampleTestcaseList, !examples.isEmpty {
             return examples.enumerated().map { index, input in
                 CodeEditorTestCase(
                     label: "Case \(index + 1)",
                     input: input,
-                    expectedOutput: ""
+                    expectedOutput: index < expectedOutputs.count ? expectedOutputs[index] : ""
                 )
             }
         }
@@ -220,12 +237,27 @@ private extension ProblemDetail {
                 CodeEditorTestCase(
                     label: "Case \(index + 1)",
                     input: input,
-                    expectedOutput: ""
+                    expectedOutput: index < expectedOutputs.count ? expectedOutputs[index] : ""
                 )
             }
         }
 
         return []
+    }
+
+    func parseExpectedOutputsFromHTML() -> [String] {
+        guard let content = content else { return [] }
+        let pattern = #"<strong>Output:?\s*</strong>\s*(.+?)(?:\s*<|\n)"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return [] }
+        let nsContent = content as NSString
+        return regex.matches(in: content, range: NSRange(location: 0, length: nsContent.length)).compactMap { match in
+            guard match.numberOfRanges > 1 else { return nil }
+            let range = match.range(at: 1)
+            guard range.location != NSNotFound else { return nil }
+            return nsContent.substring(with: range)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+        }
     }
 }
 

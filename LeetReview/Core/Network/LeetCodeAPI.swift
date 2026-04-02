@@ -879,6 +879,19 @@ struct SubmissionCheckResult: Decodable {
     let codeAnswer: [String]?
     let expectedCodeAnswer: [String]?
     let inputFormatted: String?
+    let stdOutputList: [String]?
+    let codeOutput: [String]?
+    let compileError: String?
+    let fullCompileError: String?
+    let runtimeError: String?
+    let fullRuntimeError: String?
+    let statusRuntime: String?
+    let statusMemory: String?
+    let runtimePercentile: Double?
+    let memoryPercentile: Double?
+    let correctAnswer: Bool?
+    let lastTestcase: String?
+    let expectedOutput: String?
 
     private enum CodingKeys: String, CodingKey {
         case state
@@ -893,5 +906,55 @@ struct SubmissionCheckResult: Decodable {
         case codeAnswer = "code_answer"
         case expectedCodeAnswer = "expected_code_answer"
         case inputFormatted = "input_formatted"
+        case stdOutputList = "std_output_list"
+        case codeOutput = "code_output"
+        case compileError = "compile_error"
+        case fullCompileError = "full_compile_error"
+        case runtimeError = "runtime_error"
+        case fullRuntimeError = "full_runtime_error"
+        case statusRuntime = "status_runtime"
+        case statusMemory = "status_memory"
+        case runtimePercentile = "runtime_percentile"
+        case memoryPercentile = "memory_percentile"
+        case correctAnswer = "correct_answer"
+        case lastTestcase = "last_testcase"
+        case expectedOutput = "expected_output"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        state = try container.decodeIfPresent(String.self, forKey: .state)
+        statusCode = try container.decodeIfPresent(Int.self, forKey: .statusCode)
+        statusMsg = try container.decodeIfPresent(String.self, forKey: .statusMsg)
+        runSuccess = try container.decodeIfPresent(Bool.self, forKey: .runSuccess)
+        runtime = try container.decodeIfPresent(String.self, forKey: .runtime)
+        memory = try container.decodeIfPresent(String.self, forKey: .memory)
+        totalCorrect = try container.decodeIfPresent(Int.self, forKey: .totalCorrect)
+        totalTestcases = try container.decodeIfPresent(Int.self, forKey: .totalTestcases)
+        compareResult = try container.decodeIfPresent(String.self, forKey: .compareResult)
+        codeAnswer = try container.decodeIfPresent([String].self, forKey: .codeAnswer)
+        expectedCodeAnswer = try container.decodeIfPresent([String].self, forKey: .expectedCodeAnswer)
+        inputFormatted = try container.decodeIfPresent(String.self, forKey: .inputFormatted)
+        stdOutputList = try container.decodeIfPresent([String].self, forKey: .stdOutputList)
+        compileError = try container.decodeIfPresent(String.self, forKey: .compileError)
+        fullCompileError = try container.decodeIfPresent(String.self, forKey: .fullCompileError)
+        runtimeError = try container.decodeIfPresent(String.self, forKey: .runtimeError)
+        fullRuntimeError = try container.decodeIfPresent(String.self, forKey: .fullRuntimeError)
+        statusRuntime = try container.decodeIfPresent(String.self, forKey: .statusRuntime)
+        statusMemory = try container.decodeIfPresent(String.self, forKey: .statusMemory)
+        runtimePercentile = try container.decodeIfPresent(Double.self, forKey: .runtimePercentile)
+        memoryPercentile = try container.decodeIfPresent(Double.self, forKey: .memoryPercentile)
+        correctAnswer = try container.decodeIfPresent(Bool.self, forKey: .correctAnswer)
+        lastTestcase = try container.decodeIfPresent(String.self, forKey: .lastTestcase)
+        expectedOutput = try container.decodeIfPresent(String.self, forKey: .expectedOutput)
+
+        // code_output can be either a String or [String] from the API
+        if let array = try? container.decodeIfPresent([String].self, forKey: .codeOutput) {
+            codeOutput = array
+        } else if let single = try? container.decodeIfPresent(String.self, forKey: .codeOutput) {
+            codeOutput = [single]
+        } else {
+            codeOutput = nil
+        }
     }
 }

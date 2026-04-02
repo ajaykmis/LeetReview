@@ -10,15 +10,14 @@ struct LiveCodeEditorService: CodeEditorServicing {
         guard AuthManager.hasSessionCredentials() else {
             return CodeExecutionResult(
                 status: .blocked,
-                consoleOutput: "Sign in with a LeetCode session to run code on LeetCode.",
+                statusMessage: "Sign in with a LeetCode session to run code on LeetCode.",
                 completedCaseCount: 0,
                 totalCaseCount: request.testCases.count,
-                issues: [
-                    CodeExecutionIssue(
-                        title: "Session required",
-                        detail: "Run Code uses LeetCode's authenticated execution API."
-                    )
-                ]
+                testCaseResults: [],
+                compileError: nil,
+                runtimeError: nil,
+                runtime: nil,
+                memory: nil
             )
         }
 
@@ -39,14 +38,30 @@ struct LiveCodeEditorService: CodeEditorServicing {
         let totalCases = result.totalTestcases ?? request.testCases.count
         let completed = result.totalCorrect ?? 0
 
+        let testCaseResults = buildTestCaseResults(from: result, request: request)
+
+        let hasCompileError = result.fullCompileError != nil && !(result.fullCompileError?.isEmpty ?? true)
+        let hasRuntimeError = result.fullRuntimeError != nil && !(result.fullRuntimeError?.isEmpty ?? true)
+
+        let status: CodeExecutionStatus
+        if hasCompileError || hasRuntimeError {
+            status = .blocked
+        } else if result.runSuccess == true && (result.statusMsg?.localizedCaseInsensitiveContains("accepted") == true || completed >= totalCases) {
+            status = .passed
+        } else {
+            status = .failed
+        }
+
         return CodeExecutionResult(
-            status: (result.runSuccess == true && (result.statusMsg?.localizedCaseInsensitiveContains("accepted") == true || completed >= totalCases))
-                ? .passed
-                : .failed,
-            consoleOutput: result.statusMsg ?? "Execution finished.",
+            status: status,
+            statusMessage: result.statusMsg ?? "Execution finished.",
             completedCaseCount: completed,
             totalCaseCount: totalCases,
-            issues: buildIssues(from: result)
+            testCaseResults: testCaseResults,
+            compileError: result.fullCompileError ?? result.compileError,
+            runtimeError: result.fullRuntimeError ?? result.runtimeError,
+            runtime: result.statusRuntime ?? result.runtime,
+            memory: result.statusMemory ?? result.memory
         )
     }
 
@@ -57,7 +72,12 @@ struct LiveCodeEditorService: CodeEditorServicing {
                 summary: "Sign in with a LeetCode session to submit code.",
                 passedCaseCount: 0,
                 totalCaseCount: request.testCases.count,
-                performance: nil
+                performance: nil,
+                lastTestcaseInput: nil,
+                lastExpectedOutput: nil,
+                lastCodeOutput: nil,
+                compileError: nil,
+                runtimeError: nil
             )
         }
 
@@ -84,7 +104,12 @@ struct LiveCodeEditorService: CodeEditorServicing {
             summary: summary,
             passedCaseCount: passedCases,
             totalCaseCount: totalCases,
-            performance: buildPerformance(from: result)
+            performance: buildPerformance(from: result),
+            lastTestcaseInput: result.lastTestcase,
+            lastExpectedOutput: result.expectedOutput,
+            lastCodeOutput: result.codeOutput?.first ?? result.codeAnswer?.first,
+            compileError: result.fullCompileError ?? result.compileError,
+            runtimeError: result.fullRuntimeError ?? result.runtimeError
         )
     }
 
@@ -101,36 +126,43 @@ struct LiveCodeEditorService: CodeEditorServicing {
         return try await LeetCodeAPI.shared.checkSubmission(id: id)
     }
 
-    private func buildIssues(from result: SubmissionCheckResult) -> [CodeExecutionIssue] {
-        var issues: [CodeExecutionIssue] = []
+    private func buildTestCaseResults(from result: SubmissionCheckResult, request: CodeExecutionRequest) -> [TestCaseResult] {
+        let answers = result.codeAnswer ?? []
+        let expected = result.expectedCodeAnswer ?? []
+        let stdOutputs = result.stdOutputList ?? []
+        let compareStr = result.compareResult ?? ""
+        let inputs = request.testCases.map(\.input)
 
-        if let compare = result.compareResult, !compare.isEmpty {
-            issues.append(
-                CodeExecutionIssue(
-                    title: "Compare Result",
-                    detail: compare
-                )
+        let count = max(answers.count, expected.count)
+        guard count > 0 else { return [] }
+
+        return (0..<count).map { i in
+            let passed: Bool
+            if i < compareStr.count {
+                let charIndex = compareStr.index(compareStr.startIndex, offsetBy: i)
+                passed = compareStr[charIndex] == "1"
+            } else {
+                passed = i < answers.count && i < expected.count && answers[i] == expected[i]
+            }
+
+            return TestCaseResult(
+                index: i,
+                input: i < inputs.count ? inputs[i] : "",
+                expectedOutput: i < expected.count ? expected[i] : "",
+                actualOutput: i < answers.count ? answers[i] : "",
+                stdOutput: i < stdOutputs.count ? stdOutputs[i] : "",
+                passed: passed
             )
         }
-
-        if let expected = result.expectedCodeAnswer?.first,
-           let actual = result.codeAnswer?.first,
-           expected != actual {
-            issues.append(
-                CodeExecutionIssue(
-                    title: "Expected vs Actual",
-                    detail: "Expected \(expected), got \(actual)."
-                )
-            )
-        }
-
-        return issues
     }
 
     private func mapSubmissionStatus(summary: String, runSuccess: Bool?) -> CodeSubmissionStatus {
         let normalized = summary.lowercased()
         if normalized.contains("accepted") {
             return .accepted
+        }
+        if normalized.contains("compile error") {
+            return .compileError
         }
         if normalized.contains("runtime error") {
             return .runtimeError
@@ -142,14 +174,17 @@ struct LiveCodeEditorService: CodeEditorServicing {
     }
 
     private func buildPerformance(from result: SubmissionCheckResult) -> CodePerformanceSnapshot? {
-        guard result.runtime != nil || result.memory != nil else {
+        let rt = result.statusRuntime ?? result.runtime
+        let mem = result.statusMemory ?? result.memory
+        guard rt != nil || mem != nil else {
             return nil
         }
 
         return CodePerformanceSnapshot(
-            runtime: result.runtime ?? "--",
-            memory: result.memory ?? "--",
-            percentile: nil
+            runtime: rt ?? "--",
+            memory: mem ?? "--",
+            runtimePercentile: result.runtimePercentile,
+            memoryPercentile: result.memoryPercentile
         )
     }
 }
@@ -166,30 +201,28 @@ struct MockCodeEditorService: CodeEditorServicing {
         guard !normalizedCode.isEmpty else {
             return CodeExecutionResult(
                 status: .blocked,
-                consoleOutput: "Add some code before running your tests.",
+                statusMessage: "Add some code before running your tests.",
                 completedCaseCount: 0,
                 totalCaseCount: request.testCases.count,
-                issues: [
-                    CodeExecutionIssue(
-                        title: "Empty editor",
-                        detail: "The current draft is blank."
-                    )
-                ]
+                testCaseResults: [],
+                compileError: nil,
+                runtimeError: nil,
+                runtime: nil,
+                memory: nil
             )
         }
 
         guard !filledCases.isEmpty else {
             return CodeExecutionResult(
                 status: .blocked,
-                consoleOutput: "Create at least one test case to execute the draft.",
+                statusMessage: "Create at least one test case to execute the draft.",
                 completedCaseCount: 0,
                 totalCaseCount: 0,
-                issues: [
-                    CodeExecutionIssue(
-                        title: "No test cases",
-                        detail: "The editor does not have any runnable inputs."
-                    )
-                ]
+                testCaseResults: [],
+                compileError: nil,
+                runtimeError: nil,
+                runtime: nil,
+                memory: nil
             )
         }
 
@@ -197,40 +230,53 @@ struct MockCodeEditorService: CodeEditorServicing {
             || normalizedCode.contains("fatalError")
 
         if containsPlaceholder {
+            let mockResults = filledCases.enumerated().map { index, tc in
+                TestCaseResult(
+                    index: index,
+                    input: tc.input,
+                    expectedOutput: tc.expectedOutput,
+                    actualOutput: "",
+                    stdOutput: "",
+                    passed: false
+                )
+            }
             return CodeExecutionResult(
                 status: .failed,
-                consoleOutput: """
-                Execution halted.
-                Placeholder code is still present in the current draft.
-                """,
+                statusMessage: "Execution halted. Placeholder code is still present in the current draft.",
                 completedCaseCount: 0,
                 totalCaseCount: filledCases.count,
-                issues: [
-                    CodeExecutionIssue(
-                        title: "Placeholder implementation",
-                        detail: "Replace TODO markers or fatal errors before running."
-                    )
-                ]
+                testCaseResults: mockResults,
+                compileError: nil,
+                runtimeError: nil,
+                runtime: nil,
+                memory: nil
             )
         }
 
         let completed = min(filledCases.count, max(1, normalizedCode.count / 80))
         let passedAll = completed >= filledCases.count
 
+        let mockResults = filledCases.enumerated().map { index, tc in
+            TestCaseResult(
+                index: index,
+                input: tc.input,
+                expectedOutput: tc.expectedOutput,
+                actualOutput: index < completed ? tc.expectedOutput : "wrong",
+                stdOutput: "",
+                passed: index < completed
+            )
+        }
+
         return CodeExecutionResult(
             status: passedAll ? .passed : .failed,
-            consoleOutput: """
-            Executed \(completed) of \(filledCases.count) test case(s) in mock mode.
-            Language: \(request.languageSlug)
-            """,
+            statusMessage: "Executed \(completed) of \(filledCases.count) test case(s) in mock mode.",
             completedCaseCount: completed,
             totalCaseCount: filledCases.count,
-            issues: passedAll ? [] : [
-                CodeExecutionIssue(
-                    title: "Partial pass",
-                    detail: "One or more custom cases still need work."
-                )
-            ]
+            testCaseResults: mockResults,
+            compileError: nil,
+            runtimeError: nil,
+            runtime: "4 ms",
+            memory: "16.2 MB"
         )
     }
 
@@ -249,7 +295,12 @@ struct MockCodeEditorService: CodeEditorServicing {
                 summary: "Submission was rejected because the editor draft is empty.",
                 passedCaseCount: 0,
                 totalCaseCount: testCount,
-                performance: nil
+                performance: nil,
+                lastTestcaseInput: nil,
+                lastExpectedOutput: nil,
+                lastCodeOutput: nil,
+                compileError: nil,
+                runtimeError: "Empty code submitted"
             )
         }
 
@@ -262,8 +313,14 @@ struct MockCodeEditorService: CodeEditorServicing {
                 performance: CodePerformanceSnapshot(
                     runtime: "92 ms",
                     memory: "18.4 MB",
-                    percentile: nil
-                )
+                    runtimePercentile: nil,
+                    memoryPercentile: nil
+                ),
+                lastTestcaseInput: request.testCases.last?.input,
+                lastExpectedOutput: request.testCases.last?.expectedOutput,
+                lastCodeOutput: "[]",
+                compileError: nil,
+                runtimeError: nil
             )
         }
 
@@ -275,8 +332,14 @@ struct MockCodeEditorService: CodeEditorServicing {
             performance: CodePerformanceSnapshot(
                 runtime: "64 ms",
                 memory: "17.2 MB",
-                percentile: "Beats 78%"
-            )
+                runtimePercentile: 78.0,
+                memoryPercentile: 65.0
+            ),
+            lastTestcaseInput: nil,
+            lastExpectedOutput: nil,
+            lastCodeOutput: nil,
+            compileError: nil,
+            runtimeError: nil
         )
     }
 }

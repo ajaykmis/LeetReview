@@ -22,7 +22,7 @@ final class MockCodeEditorServiceTests: XCTestCase {
     func testRunEmptyCodeReturnsBlocked() async throws {
         let result = try await service.runCode(makeRequest(code: ""))
         XCTAssertEqual(result.status, .blocked)
-        XCTAssertTrue(result.consoleOutput.contains("Add some code"))
+        XCTAssertTrue(result.statusMessage.contains("Add some code"))
     }
 
     func testRunWithNoTestCasesReturnsBlocked() async throws {
@@ -36,7 +36,7 @@ final class MockCodeEditorServiceTests: XCTestCase {
     func testRunWithTodoReturnsFailedPlaceholder() async throws {
         let result = try await service.runCode(makeRequest(code: "// TODO: implement"))
         XCTAssertEqual(result.status, .failed)
-        XCTAssertTrue(result.issues.contains(where: { $0.title == "Placeholder implementation" }))
+        XCTAssertTrue(result.testCaseResults.allSatisfy { !$0.passed })
     }
 
     func testRunWithFatalErrorReturnsFailedPlaceholder() async throws {
@@ -72,6 +72,6 @@ final class MockCodeEditorServiceTests: XCTestCase {
         let result = try await service.submitCode(makeRequest(code: "class Solution: def solve(): return [0,1]"))
         XCTAssertEqual(result.status, .accepted)
         XCTAssertNotNil(result.performance)
-        XCTAssertEqual(result.performance?.percentile, "Beats 78%")
+        XCTAssertEqual(result.performance?.runtimePercentile, 78.0)
     }
 }

@@ -169,10 +169,14 @@ final class CodeEditorViewModel {
         } catch {
             runResult = CodeExecutionResult(
                 status: .blocked,
-                consoleOutput: "The run request failed: \(error.localizedDescription)",
+                statusMessage: "The run request failed: \(error.localizedDescription)",
                 completedCaseCount: 0,
                 totalCaseCount: testCases.count,
-                issues: []
+                testCaseResults: [],
+                compileError: nil,
+                runtimeError: nil,
+                runtime: nil,
+                memory: nil
             )
         }
 
@@ -198,7 +202,12 @@ final class CodeEditorViewModel {
                 summary: "The submission request failed: \(error.localizedDescription)",
                 passedCaseCount: 0,
                 totalCaseCount: testCases.count,
-                performance: nil
+                performance: nil,
+                lastTestcaseInput: nil,
+                lastExpectedOutput: nil,
+                lastCodeOutput: nil,
+                compileError: nil,
+                runtimeError: nil
             )
         }
 
