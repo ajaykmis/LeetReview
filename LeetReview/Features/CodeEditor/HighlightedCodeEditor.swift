@@ -49,47 +49,110 @@ struct HighlightedCodeEditor: UIViewRepresentable {
     // MARK: - Keyboard Toolbar
 
     private func makeToolbar(for textView: UITextView, coordinator: Coordinator) -> UIView {
-        let containerHeight: CGFloat = 44
+        let rowHeight: CGFloat = 36
+        let containerHeight: CGFloat = rowHeight * 2 + 8 + 0.5 // 2 rows + padding + separator
         let container = UIView(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: containerHeight))
         container.backgroundColor = UIColor(Theme.Colors.card)
         container.autoresizingMask = .flexibleWidth
 
-        // Thin top separator line (0.5pt)
+        // Thin top separator line
         let separator = UIView()
         separator.backgroundColor = UIColor(Theme.Colors.textSecondary).withAlphaComponent(0.3)
         separator.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(separator)
 
-        // Undo button (fixed left)
-        let undoButton = UIButton(type: .system)
-        undoButton.setImage(UIImage(systemName: "arrow.uturn.backward"), for: .normal)
-        undoButton.tintColor = UIColor(Theme.Colors.accent)
-        undoButton.translatesAutoresizingMaskIntoConstraints = false
-        undoButton.addAction(UIAction { _ in textView.undoManager?.undo() }, for: .touchUpInside)
-        container.addSubview(undoButton)
+        // Row 1: most common coding symbols
+        let row1Keys: [(String, String)] = [
+            ("TAB", "    "), ("{", "{"), ("}", "}"), ("(", "("), (")", ")"),
+            ("[", "["), ("]", "]"), ("=", "="), (";", ";"), (":", ":"), (".", "."),
+        ]
 
-        // Redo button (fixed left, after undo)
-        let redoButton = UIButton(type: .system)
-        redoButton.setImage(UIImage(systemName: "arrow.uturn.forward"), for: .normal)
-        redoButton.tintColor = UIColor(Theme.Colors.accent)
-        redoButton.translatesAutoresizingMaskIntoConstraints = false
-        redoButton.addAction(UIAction { _ in textView.undoManager?.redo() }, for: .touchUpInside)
-        container.addSubview(redoButton)
+        // Row 2: operators, quotes, misc + undo/redo/done
+        let row2Keys: [(String, String)] = [
+            ("<", "<"), (">", ">"), ("\"", "\""), ("'", "'"), (",", ","),
+            ("+", "+"), ("-", "-"), ("*", "*"), ("/", "/"), ("!", "!"),
+            ("&", "&"), ("|", "|"), ("_", "_"), ("#", "#"),
+        ]
 
-        // Scrollable keys row
-        let scrollView = UIScrollView()
-        scrollView.showsHorizontalScrollIndicator = false
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        container.addSubview(scrollView)
+        let bgColor = UIColor(Theme.Colors.background)
+        let textColor = UIColor(Theme.Colors.text)
+        let accentColor = UIColor(Theme.Colors.accent)
 
-        // Done button (fixed right)
-        let doneButton = UIButton(type: .system)
-        doneButton.setTitle("Done", for: .normal)
-        doneButton.titleLabel?.font = .boldSystemFont(ofSize: 15)
-        doneButton.tintColor = UIColor(Theme.Colors.accent)
-        doneButton.translatesAutoresizingMaskIntoConstraints = false
-        doneButton.addAction(UIAction { _ in textView.resignFirstResponder() }, for: .touchUpInside)
-        container.addSubview(doneButton)
+        func makeKeyButton(_ label: String, _ insertText: String) -> UIButton {
+            let button = UIButton(type: .system)
+            button.setTitle(label, for: .normal)
+            button.titleLabel?.font = label == "TAB"
+                ? .systemFont(ofSize: 11, weight: .semibold)
+                : .monospacedSystemFont(ofSize: 15, weight: .medium)
+            button.setTitleColor(label == "TAB" ? accentColor : textColor, for: .normal)
+            button.backgroundColor = bgColor
+            button.layer.cornerRadius = 6
+            button.contentEdgeInsets = UIEdgeInsets(top: 4, left: label == "TAB" ? 10 : 8, bottom: 4, right: label == "TAB" ? 10 : 8)
+            button.addAction(UIAction { _ in
+                coordinator.insertText(insertText, into: textView)
+            }, for: .touchUpInside)
+            return button
+        }
+
+        func makeScrollableRow(_ keys: [(String, String)]) -> UIScrollView {
+            let scroll = UIScrollView()
+            scroll.showsHorizontalScrollIndicator = false
+            scroll.translatesAutoresizingMaskIntoConstraints = false
+
+            let stack = UIStackView()
+            stack.axis = .horizontal
+            stack.spacing = 5
+            stack.alignment = .center
+            stack.translatesAutoresizingMaskIntoConstraints = false
+            scroll.addSubview(stack)
+
+            NSLayoutConstraint.activate([
+                stack.leadingAnchor.constraint(equalTo: scroll.contentLayoutGuide.leadingAnchor, constant: 6),
+                stack.trailingAnchor.constraint(equalTo: scroll.contentLayoutGuide.trailingAnchor, constant: -6),
+                stack.topAnchor.constraint(equalTo: scroll.contentLayoutGuide.topAnchor),
+                stack.bottomAnchor.constraint(equalTo: scroll.contentLayoutGuide.bottomAnchor),
+                stack.heightAnchor.constraint(equalTo: scroll.frameLayoutGuide.heightAnchor),
+            ])
+
+            for (label, insertText) in keys {
+                stack.addArrangedSubview(makeKeyButton(label, insertText))
+            }
+            return scroll
+        }
+
+        let row1Scroll = makeScrollableRow(row1Keys)
+        container.addSubview(row1Scroll)
+
+        // Row 2: symbols + undo/redo/done pinned right
+        let row2Scroll = makeScrollableRow(row2Keys)
+        container.addSubview(row2Scroll)
+
+        // Undo/Redo/Done in row 2, pinned right
+        let actionStack = UIStackView()
+        actionStack.axis = .horizontal
+        actionStack.spacing = 2
+        actionStack.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(actionStack)
+
+        let undoBtn = UIButton(type: .system)
+        undoBtn.setImage(UIImage(systemName: "arrow.uturn.backward")?.withConfiguration(UIImage.SymbolConfiguration(pointSize: 13)), for: .normal)
+        undoBtn.tintColor = accentColor
+        undoBtn.addAction(UIAction { _ in textView.undoManager?.undo() }, for: .touchUpInside)
+
+        let redoBtn = UIButton(type: .system)
+        redoBtn.setImage(UIImage(systemName: "arrow.uturn.forward")?.withConfiguration(UIImage.SymbolConfiguration(pointSize: 13)), for: .normal)
+        redoBtn.tintColor = accentColor
+        redoBtn.addAction(UIAction { _ in textView.undoManager?.redo() }, for: .touchUpInside)
+
+        let doneBtn = UIButton(type: .system)
+        doneBtn.setTitle("Done", for: .normal)
+        doneBtn.titleLabel?.font = .boldSystemFont(ofSize: 13)
+        doneBtn.tintColor = accentColor
+        doneBtn.addAction(UIAction { _ in textView.resignFirstResponder() }, for: .touchUpInside)
+
+        actionStack.addArrangedSubview(undoBtn)
+        actionStack.addArrangedSubview(redoBtn)
+        actionStack.addArrangedSubview(doneBtn)
 
         NSLayoutConstraint.activate([
             separator.topAnchor.constraint(equalTo: container.topAnchor),
@@ -97,85 +160,21 @@ struct HighlightedCodeEditor: UIViewRepresentable {
             separator.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             separator.heightAnchor.constraint(equalToConstant: 0.5),
 
-            undoButton.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 8),
-            undoButton.centerYAnchor.constraint(equalTo: container.centerYAnchor),
-            undoButton.widthAnchor.constraint(equalToConstant: 32),
+            // Row 1: full width
+            row1Scroll.topAnchor.constraint(equalTo: separator.bottomAnchor, constant: 2),
+            row1Scroll.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            row1Scroll.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            row1Scroll.heightAnchor.constraint(equalToConstant: rowHeight),
 
-            redoButton.leadingAnchor.constraint(equalTo: undoButton.trailingAnchor, constant: 4),
-            redoButton.centerYAnchor.constraint(equalTo: container.centerYAnchor),
-            redoButton.widthAnchor.constraint(equalToConstant: 32),
+            // Row 2: left side scrollable, right side pinned actions
+            row2Scroll.topAnchor.constraint(equalTo: row1Scroll.bottomAnchor, constant: 2),
+            row2Scroll.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            row2Scroll.trailingAnchor.constraint(equalTo: actionStack.leadingAnchor, constant: -4),
+            row2Scroll.heightAnchor.constraint(equalToConstant: rowHeight),
 
-            doneButton.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -12),
-            doneButton.centerYAnchor.constraint(equalTo: container.centerYAnchor),
-            doneButton.widthAnchor.constraint(equalToConstant: 44),
-
-            scrollView.leadingAnchor.constraint(equalTo: redoButton.trailingAnchor, constant: 4),
-            scrollView.trailingAnchor.constraint(equalTo: doneButton.leadingAnchor, constant: -4),
-            scrollView.topAnchor.constraint(equalTo: separator.bottomAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            actionStack.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -8),
+            actionStack.centerYAnchor.constraint(equalTo: row2Scroll.centerYAnchor),
         ])
-
-        // Key definitions: (label, inserted text) — most common coding keys first
-        let keys: [(String, String)] = [
-            ("TAB", "    "),
-            ("{", "{"),
-            ("}", "}"),
-            ("(", "("),
-            (")", ")"),
-            ("[", "["),
-            ("]", "]"),
-            ("=", "="),
-            (";", ";"),
-            (":", ":"),
-            (".", "."),
-            ("<", "<"),
-            (">", ">"),
-            ("\"", "\""),
-            ("'", "'"),
-            (",", ","),
-            ("+", "+"),
-            ("-", "-"),
-            ("*", "*"),
-            ("/", "/"),
-            ("!", "!"),
-            ("&", "&"),
-            ("|", "|"),
-            ("_", "_"),
-            ("#", "#"),
-        ]
-
-        let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.spacing = 6
-        stackView.alignment = .center
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.addSubview(stackView)
-
-        NSLayoutConstraint.activate([
-            stackView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor, constant: 8),
-            stackView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor, constant: -8),
-            stackView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
-            stackView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
-            stackView.heightAnchor.constraint(equalTo: scrollView.frameLayoutGuide.heightAnchor),
-        ])
-
-        let bgColor = UIColor(Theme.Colors.background)
-        let textColor = UIColor(Theme.Colors.text)
-        let accentColor = UIColor(Theme.Colors.accent)
-
-        for (label, insertText) in keys {
-            let button = UIButton(type: .system)
-            button.setTitle(label, for: .normal)
-            button.titleLabel?.font = label == "TAB" ? .systemFont(ofSize: 12, weight: .semibold) : .monospacedSystemFont(ofSize: 16, weight: .medium)
-            button.setTitleColor(label == "TAB" ? accentColor : textColor, for: .normal)
-            button.backgroundColor = bgColor
-            button.layer.cornerRadius = 6
-            button.contentEdgeInsets = UIEdgeInsets(top: 6, left: label == "TAB" ? 12 : 10, bottom: 6, right: label == "TAB" ? 12 : 10)
-            button.addAction(UIAction { _ in
-                coordinator.insertText(insertText, into: textView)
-            }, for: .touchUpInside)
-            stackView.addArrangedSubview(button)
-        }
 
         return container
     }
