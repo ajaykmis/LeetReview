@@ -13,7 +13,7 @@ workflows:
         XCODE_WORKSPACE: LeetReview.xcodeproj
         XCODE_SCHEME: LeetReview
         BUNDLE_ID: com.leetreview
-        APP_STORE_APPLE_ID: "0000000000"  # Update with real Apple ID after first upload
+        APP_STORE_APPLE_ID: "6761561925"
       xcode: latest
       cocoapods: default
     scripts:
