@@ -12,7 +12,6 @@ struct ReviewSessionView: View {
     @State private var solutionLang: String?
     @State private var isLoadingSolution = false
     @State private var editorProblem: CodeEditorProblemSnapshot?
-    @State private var showEditor = false
 
     var body: some View {
         NavigationStack {
@@ -67,21 +66,19 @@ struct ReviewSessionView: View {
         .sheet(item: $solutionSheetItem) { item in
             solutionSheet(for: item)
         }
-        .fullScreenCover(isPresented: $showEditor) {
-            if let problem = editorProblem {
-                NavigationStack {
-                    CodeEditorView(problem: problem)
-                        .toolbar {
-                            ToolbarItem(placement: .topBarLeading) {
-                                Button {
-                                    showEditor = false
-                                } label: {
-                                    Image(systemName: "xmark")
-                                        .foregroundStyle(Theme.Colors.text)
-                                }
+        .fullScreenCover(item: $editorProblem) { problem in
+            NavigationStack {
+                CodeEditorView(problem: problem)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button {
+                                editorProblem = nil
+                            } label: {
+                                Image(systemName: "xmark")
+                                    .foregroundStyle(Theme.Colors.text)
                             }
                         }
-                }
+                    }
             }
         }
         .alert("Remove from Review?", isPresented: .init(
@@ -480,9 +477,7 @@ struct ReviewSessionView: View {
                 let detail = try await LeetCodeAPI.shared.fetchProblemDetail(titleSlug: item.titleSlug)
                 if let snapshot = CodeEditorProblemSnapshot(detail: detail, fallbackTitle: item.title) {
                     editorProblem = snapshot
-                    showEditor = true
                 } else {
-                    // Create a minimal snapshot as fallback
                     editorProblem = CodeEditorProblemSnapshot(
                         questionId: "0",
                         title: item.title,
@@ -500,10 +495,8 @@ struct ReviewSessionView: View {
                             CodeEditorTestCase(label: "Case 1", input: "", expectedOutput: "")
                         ]
                     )
-                    showEditor = true
                 }
             } catch {
-                // Fallback: create minimal snapshot
                 editorProblem = CodeEditorProblemSnapshot(
                     questionId: "0",
                     title: item.title,
@@ -521,7 +514,6 @@ struct ReviewSessionView: View {
                         CodeEditorTestCase(label: "Case 1", input: "", expectedOutput: "")
                     ]
                 )
-                showEditor = true
             }
         }
     }
